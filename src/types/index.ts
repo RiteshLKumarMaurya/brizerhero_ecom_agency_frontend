@@ -12,11 +12,10 @@ export interface PageResponse<T> {
   totalElements: number;
   totalPages: number;
   size: number;
-  page: number;       // backend uses "page" not "number"
+  page: number;
   last: boolean;
-  // convenience helpers — computed from above
   first?: boolean;
-  number?: number;    // alias for page, kept for compatibility
+  number?: number;
 }
 
 // ============================================================
@@ -32,7 +31,7 @@ export interface MediaResponse {
 }
 
 // ============================================================
-// Auth — exact field names from Swagger / Postman
+// Auth
 // ============================================================
 export interface TokenResponse {
   accessToken: string;
@@ -41,55 +40,42 @@ export interface TokenResponse {
   refreshTokenExpiry: number;
 }
 
-/** Google login response */
 export interface AuthResponse {
   user: UserProfileResponse;
   tokens: TokenResponse;
 }
 
-/** Phone/password login response */
 export interface PhonePasswordLoginResponse {
   userProfileResponse: UserProfileResponse;
   tokenResponse: TokenResponse;
 }
 
-/** Phone/password register response */
 export interface PhonePasswordRegisterResponse {
   userProfileResponse: UserProfileResponse;
   tokenResponse: TokenResponse;
 }
 
-export interface GoogleLoginRequest {
-  idToken: string;
-}
+export interface GoogleLoginRequest { idToken: string; }
 
-/** Postman-confirmed: fullPhoneNumber = countryCode+phone concatenated */
 export interface LoginRequest {
-  fullPhoneNumber: string;   // e.g. "+918651600737"
+  fullPhoneNumber: string;
   password: string;
   fcmToken?: string;
   device?: string;
 }
 
-/** Register: phoneNumber (not phone), roleName required */
 export interface PhonePasswordRegisterRequest {
   fullName: string;
-  phoneNumber: string;        // NOTE: "phoneNumber" not "phone"
+  phoneNumber: string;
   countryCode: string;
   password: string;
-  roleName: string;           // required: "ROLE_CLIENT"
+  roleName: string;
   fcmToken?: string;
   device?: string;
 }
 
-export interface RefreshRequest {
-  refreshToken: string;
-}
-
-/** Logout: deviceToken (not refreshToken) */
-export interface LogoutRequest {
-  deviceToken?: string;
-}
+export interface RefreshRequest { refreshToken: string; }
+export interface LogoutRequest { deviceToken?: string; }
 
 // ============================================================
 // User
@@ -103,17 +89,28 @@ export interface SettingResponse {
   technicalIssueSetting: TechnicalIssueHandleSettingResponse;
 }
 
-export interface UserProfileResponse {
-  id: number;
-  email: string;
-  phone: string;
-  fullName: string;
-  mediaProfile: MediaResponse | null;
-  blocked: boolean;
-  roleName: string;
-  settings: SettingResponse;
-  webLinks: LinkResponse[];
-  addresses: AddressResponse[];
+// ============================================================
+// Settings
+// ============================================================
+export interface TechnicalIssueHandleSettingResponse {
+  title: string;
+  description: string;
+  waitFrom: string; // ISO datetime
+  waitUntil: string | null; // ISO datetime
+  image: MediaResponse | null;
+}
+
+export interface SettingResponse {
+  technicalIssueSetting: TechnicalIssueHandleSettingResponse;
+}
+
+// For update request (matches backend UpdateTechnicalIssueSettingRequest)
+export interface UpdateTechnicalIssueSettingRequest {
+  title?: string;
+  description?: string;
+  waitFrom?: string;
+  waitUntil?: string | null;
+  imageFile?: File; // optional, for upload
 }
 
 // ============================================================
@@ -133,24 +130,36 @@ export interface ServiceResponse {
   shortDescription: string;
   longDescription: string;
   iconImage: MediaResponse | null;
-  serviceLinks: LinkResponse[];
+  serviceLinks: ServiceLinkResponse[];
   displayOrder: number;
   featured: boolean;
   active: boolean;
-  features: FeatureResponse[];
-  technologies: TechnologyResponse[];
+  features: ServiceFeatureResponse[];
+  technologies: ServiceTechnologyResponse[];
   createdAt: string;
   updatedAt: string;
 }
 
+
 // ============================================================
 // Projects
 // ============================================================
-/** Swagger-confirmed field names */
 export interface ProjectBundleSummaryResponse {
   projectBundleId: number;
   projectBundleName: string;
   projectBundleSlug: string;
+}
+
+export interface ProjectBannerImageResponse {
+  id: number;
+  media: MediaResponse;
+  displayOrder: number;
+}
+
+export interface ProjectTechnologyResponse {
+  id: number;
+  technology: TechnologyResponse;
+  displayOrder: number;
 }
 
 export interface ProjectResponse {
@@ -160,11 +169,11 @@ export interface ProjectResponse {
   shortDescription: string;
   fullDescription: string;
   thumbImage: MediaResponse | null;
-  bannerImages: MediaResponse[];
+  bannerImages: ProjectBannerImageResponse[];   // ✅ changed from MediaResponse[]
   externalLinks: LinkResponse[];
   featured: boolean;
   active: boolean;
-  technologies: TechnologyResponse[];
+  technologies: ProjectTechnologyResponse[];    // ✅ changed from TechnologyResponse[]
   createdAt: string;
   updatedAt: string;
   projectBundle: ProjectBundleSummaryResponse | null;
@@ -183,45 +192,34 @@ export interface ProjectBundleResponse {
   projects: ProjectResponse[];
   packageEntity: PackageResponse | null;
   testimonial: TestimonialResponse | null;
+  createdAt: string;    // ISO datetime
+  updatedAt: string;    // ISO datetime
 }
 
-// ============================================================
-// Packages
-// ============================================================
-export interface PackageServiceMapping {
-  id: number;
-  service: ServiceResponse;
-  displayOrder: number;
-  highlighted?: boolean;
-}
+// Project deliverable types
+export type ProjectDeliverableType =
+  | 'WEBSITE'
+  | 'ANDROID_APP'
+  | 'IOS_APP'
+  | 'ADMIN_PANEL'
+  | 'BACKEND_API'
+  | 'DELIVERY_APP'
+  | 'INVENTORY_SYSTEM'
+  | 'FULL_ECOSYSTEM';
 
-export interface PackageResponse {
-  id: number;
-  name: string;
-  slug: string;
-  shortDescription: string;
-  longDescription: string;
-  price: number;
-  currencyCode: string;
-  iconImage: MediaResponse | null;
-  featured: boolean;
-  displayOrder: number;
-  active: boolean;
-  services: PackageServiceMapping[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 // ============================================================
 // Technologies
 // ============================================================
+
+
 export interface TechnologyResponse {
   id: number;
   name: string;
   slug: string;
   description: string;
   iconImage: MediaResponse | null;
-  links: LinkResponse[];
+  links: TechnologyLinkResponse[];   // ✅ not LinkResponse[]
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -230,6 +228,21 @@ export interface TechnologyResponse {
 // ============================================================
 // Testimonials
 // ============================================================
+export type DesignationType = 'CEO' | 'FOUNDER' | 'MANAGER' | 'EMPLOYEE' | 'PRESIDENT';
+
+
+export interface TestimonialBannerImageResponse {
+  id: number;
+  media: MediaResponse;
+  displayOrder: number;
+}
+
+export interface TestimonialLinkResponse {
+  id: number;
+  link: LinkResponse;
+  displayOrder: number;
+}
+
 export interface TestimonialResponse {
   id: number;
   clientName: string;
@@ -238,14 +251,15 @@ export interface TestimonialResponse {
   review: string;
   rating: number;
   thumbImage: MediaResponse | null;
-  bannerImages: MediaResponse[];
-  links: LinkResponse[];
+  bannerImages: TestimonialBannerImageResponse[];   // ✅ changed
+  links: TestimonialLinkResponse[];
   featured: boolean;
   active: boolean;
   clientId: number;
   createdAt: string;
   updatedAt: string;
 }
+
 
 // ============================================================
 // Features & Links
@@ -260,35 +274,94 @@ export interface FeatureResponse {
   updatedAt: string;
 }
 
+// ============================================================
+// Links
+// ============================================================
+export type LinkType =
+  | 'WEBSITE'
+  | 'LANDING_PAGE'
+  | 'PLAY_STORE'
+  | 'APP_STORE'
+  | 'ADMIN_PANEL'
+  | 'DELIVERY_APP'
+  | 'GITHUB'
+  | 'YOUTUBE'
+  | 'FIGMA'
+  | 'DOCUMENTATION'
+  | 'OTHER';
 export interface LinkResponse {
   id: number;
   name: string;
   description: string;
   url: string;
-  linkType: string;
+  linkType: LinkType;
   iconImage: MediaResponse | null;
   createdAt: string;
   updatedAt: string;
 }
 
 // ============================================================
-// Banners
+// Web Links
 // ============================================================
+export type WebLinkType =
+  | 'PRIVACY_POLICY'
+  | 'TERMS_CONDITIONS'
+  | 'DELETE_ACCOUNT'
+  | 'REFUND_POLICY'
+  | 'SHIPPING_POLICY'
+  | 'CANCELLATION_POLICY'
+  | 'RETURN_POLICY'
+  | 'ABOUT_US'
+  | 'CONTACT_US'
+  | 'FAQ'
+  | 'SUPPORT'
+  | 'USER_AGREEMENT'
+  | 'COOKIE_POLICY'
+  | 'LOYALTY_PROGRAM'
+  | 'CAREERS';
+
+export interface WebLinkResponse {
+  id: number;
+  name: string;
+  url: string;
+  type: WebLinkType;
+  isActive: boolean;
+}
+
+///Banner
+export type BannerType = 'PACKAGE' | 'SERVICE' | 'PROJECT' | 'URL' | 'TESTIMONIAL' | 'TECHNOLOGY';
+
 export interface BannerResponse {
   id: number;
   bannerImage: MediaResponse | null;
-  type: string;
-  referenceId: number;
-  redirectUrl: string;
+  type: BannerType;
+  referenceId: number | null;
+  redirectUrl: string | null;
   active: boolean;
   startAt: string;
-  endAt: string;
+  endAt: string | null;
   priority: number;
-}
+}// ============================================================
+// Contact - Enums matching backend
+// ============================================================
 
-// ============================================================
-// Contact
-// ============================================================
+
+export type BusinessType = 
+  | 'ECOMMERCE_STORE_OWNER'
+  | 'D2C_BRAND'
+  | 'RETAIL_BUSINESS'
+  | 'WHOLESALER_DISTRIBUTOR'
+  | 'MANUFACTURER'
+  | 'STARTUP'
+  | 'OTHER';
+
+export type BusinessModelType = 
+  | 'FULL_PAYMENT'
+  | 'REVENUE_SHARE'
+  | 'EQUITY_SHARE'
+  | 'UNDECIDED';
+
+
 export interface ContactRequestCreateRequest {
   name: string;
   email: string;
@@ -296,59 +369,86 @@ export interface ContactRequestCreateRequest {
   phone: string;
   companyName?: string;
   country: string;
-  source?: string;
+  source?: LeadSource;              // default: 'WEBSITE'
   packageId?: number;
   budgetMin?: number;
   budgetMax?: number;
   message: string;
-  currencyCode?: string;
-  businessModelType?: string;
+  currencyCode?: CurrencyCode;      // default: 'USD'
+  businessModelType?: BusinessModelType;  // default: 'UNDECIDED'
+  businessType?: BusinessType;      // NEW: matches backend enum
   projectIdea?: string;
   sharePercentage?: number;
 }
 
-export interface ContactRequestResponse {
-  id: number;
-  name: string;
-  email: string;
-  countryCode: string;
-  phone: string;
-  companyName: string;
-  country: string;
-  status: string;
-  source: string;
-  packageId: number;
-  packageName: string;
-  budgetMin: number;
-  budgetMax: number;
-  message: string;
-  contactedAt: string;
-  closedAt: string;
-  notes: string;
-  assignedToId: number;
-  assignedToName: string;
-  createdAt: string;
-  updatedAt: string;
-  currencyCode: string;
-  businessModelType: string;
-  projectIdea: string;
-  sharePercentage: number;
-  partnershipAccepted: boolean;
-}
 
 // ============================================================
 // Address
 // ============================================================
+// ============================================================
+// Addresses
+// ============================================================
+export type AddressType = 'HOME' | 'CLINIC' | 'BUSINESS' | 'BILLING' | 'OTHER';
+
 export interface AddressResponse {
   id: number;
+  addressType: AddressType;
+  contactPersonName: string;
+  countryCode: string;
+  contactPhoneNumber: string;
   addressLine1: string;
-  addressLine2: string;
+  addressLine2: string | null;
   city: string;
-  state: string;
-  country: string;
-  postalCode: string;
-  addressType: string;
+  district: string;
+  stateName: string;
+  zipCode: string;
+  countryName: string;
+  landmark: string | null;
+  nearbyPlace: string | null;
+  directions: string | null;
+  displayName: string | null;
+  fullAddress: string;
+  googlePlaceId: string | null;
+  latitude: number | null;
+  longitude: number | null;
   isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+//admin user
+
+// ============================================================
+// Users
+// ============================================================
+export type RoleName = 'ROLE_ADMIN' | 'ROLE_CLIENT';
+
+export interface UserSummaryResponse {
+  id: number;
+  email: string;
+  phone: string;
+  fullName: string;
+  mediaProfile: MediaResponse | null;
+  blocked: boolean;
+  roleName: RoleName;
+  createdAt?: string;   // optional, for frontend table
+}
+
+export interface UserProfileResponse {
+  id: number;
+  email: string;
+  phone: string;
+  fullName: string;
+  mediaProfile: MediaResponse | null;
+  blocked: boolean;
+  roleName: RoleName;
+  settings: SettingResponse;
+  webLinks: WebLinkResponse[];
+  addresses: AddressResponse[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============================================================
@@ -377,7 +477,6 @@ export interface UpdateContactStatusRequest {
   assignedToId?: number;
 }
 
-// Contact status enum values from Postman
 export type ContactStatus =
   | 'PENDING'
   | 'CONTACTED'
@@ -385,3 +484,180 @@ export type ContactStatus =
   | 'IN_PROGRESS'
   | 'CLOSED_WON'
   | 'CLOSED_LOST';
+
+
+  export interface ServiceResponse {
+  id: number;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  longDescription: string;
+  iconImage: MediaResponse | null;
+  serviceLinks: ServiceLinkResponse[];
+  displayOrder: number;
+  featured: boolean;
+  active: boolean;
+  features: ServiceFeatureResponse[];
+  technologies: ServiceTechnologyResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceLinkResponse {
+  id: number;
+  link: LinkResponse;
+  displayOrder: number;
+}
+
+
+export interface ServiceTechnologyResponse {
+  id: number;
+  technology: TechnologyResponse;
+  displayOrder: number;
+}
+
+// ============================================================
+// Packages
+// ============================================================
+export type CurrencyCode = 'INR' | 'USD' | 'EUR' | 'GBP' | 'AED';
+
+
+  //packages
+
+export interface PackageServiceMapping {
+  id: number;
+  service: ServiceResponse;
+  displayOrder: number;
+  highlighted?: boolean;
+}
+
+export interface PackageServiceResponse {
+  id: number;                     // mapping id
+  serviceResponse: ServiceResponse;  // full service object
+  displayOrder: number;
+}
+
+export interface PackageResponse {
+  id: number;
+  name: string;
+  slug: string;
+  shortDescription: string;
+  longDescription: string;
+  price: number;
+  currencyCode: CurrencyCode;
+  iconImage: MediaResponse | null;
+  featured: boolean;
+  displayOrder: number;
+  active: boolean;
+  services: PackageServiceResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// If you also need the request DTOs (for create/update), you can add:
+export interface PackageServiceRequest {
+  serviceId: number;
+  displayOrder?: number;
+  highlighted?: boolean;
+}
+
+// ============================================================
+// Technologies
+// ============================================================
+export interface TechnologyLinkResponse {
+  id: number;
+  link: LinkResponse;
+  displayOrder: number;
+}
+
+// ============================================================
+// Notifications
+// ============================================================
+export type NotificationType = 'LEAD' | 'PROMOTION' | 'PAYMENT' | 'SYSTEM' | 'SECURITY';
+
+export interface NotificationResponse {
+  id: number;
+  title: string;
+  message: string;
+  read: boolean;
+  notificationType: NotificationType;
+  redirectUrl: string;
+  allDevices: boolean;
+  media: MediaResponse | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminNotificationRequest {
+  title: string;
+  message: string;
+  notificationType: NotificationType;
+  redirectUrl?: string;
+  notificationImageFile?: File;
+  sendToAll: boolean;
+  sendToAllDevices: boolean;
+  deviceToken?: string;
+  userId?: number;
+  userIds?: number[];
+}
+
+// ============================================================
+// Contact Requests
+// ============================================================
+export type LeadStatus = 'NEW' | 'CONTACTED' | 'PROPOSAL_SENT' | 'NEGOTIATION' | 'WON' | 'LOST';
+export type LeadSource = 'WEBSITE' | 'GOOGLE' | 'LINKEDIN' | 'FACEBOOK' | 'INSTAGRAM' | 'REFERRAL' | 'WHATSAPP' | 'OTHER';
+
+export interface ContactRequestResponse {
+  id: number;
+  name: string;
+  email: string;
+  countryCode: string;
+  phone: string;
+  companyName: string;
+  country: string;
+  status: LeadStatus;
+  source: LeadSource;
+  packageId: number;
+  packageName: string;
+  budgetMin: number;
+  budgetMax: number;
+  message: string;
+  contactedAt: string;
+  closedAt: string;
+  notes: string;
+  assignedToId: number;
+  assignedToName: string;
+  createdAt: string;
+  updatedAt: string;
+  currencyCode: string;
+  businessModelType: string;
+  projectIdea: string;
+  sharePercentage: number;
+  partnershipAccepted: boolean;
+}
+
+export interface ContactRequestStatsResponse {
+  newCount: number;
+  contactedCount: number;
+  proposalSentCount: number;
+  negotiationCount: number;
+  wonCount: number;
+  lostCount: number;
+}
+
+export interface ContactRequestSearchRequest {
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  direction?: 'ASC' | 'DESC';
+  status?: LeadStatus;
+  source?: LeadSource;
+  email?: string;
+  assignedToId?: number;
+}
+
+export interface ContactRequestAdminUpdateRequest {
+  status?: LeadStatus;
+  notes?: string;
+  assignedToId?: number;
+}

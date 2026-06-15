@@ -19,25 +19,21 @@ function PackageCard({ pkg, index }: { pkg: PackageResponse; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       className={cn(
-        'relative rounded-2xl border p-6 flex flex-col h-full transition-all duration-300',
+        'relative rounded-2xl border p-7 flex flex-col h-full transition-all duration-300 hover:shadow-xl',
         pkg.featured
-          ? 'border-brand-500 bg-brand-600 text-white shadow-glow-md scale-[1.02]'
-          : 'card-hover'
+          ? 'border-brand-500 bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-lg scale-[1.02]'
+          : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:-translate-y-1'
       )}
     >
       {pkg.featured && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-bold">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-400 text-amber-900 text-xs font-bold shadow-md">
             <Star className="w-3 h-3 fill-current" /> Most Popular
           </span>
         </div>
       )}
 
-      {/* Icon */}
-      <div className={cn(
-        'w-12 h-12 rounded-xl flex items-center justify-center mb-4',
-        pkg.featured ? 'bg-white/20' : 'bg-brand-50 dark:bg-brand-950/30'
-      )}>
+      <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center mb-5', pkg.featured ? 'bg-white/20' : 'bg-brand-50 dark:bg-brand-950/30')}>
         {pkg.iconImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={getOptimizedUrl(pkg.iconImage)} alt={pkg.name} className="w-6 h-6 object-contain" />
@@ -46,15 +42,12 @@ function PackageCard({ pkg, index }: { pkg: PackageResponse; index: number }) {
         )}
       </div>
 
-      <h3 className={cn(
-        'font-display text-xl font-bold mb-1',
-        pkg.featured ? 'text-white' : 'text-zinc-900 dark:text-zinc-100'
-      )}>
+      <h3 className={cn('font-display text-xl font-bold mb-1', pkg.featured ? 'text-white' : 'text-zinc-900 dark:text-zinc-100')}>
         {pkg.name}
       </h3>
 
       <div className="flex items-baseline gap-1 mb-2">
-        <span className={cn('font-display text-3xl font-bold', pkg.featured ? 'text-white' : 'gradient-text')}>
+        <span className={cn('font-display text-3xl font-bold', pkg.featured ? 'text-white' : 'bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent')}>
           {formatPrice(pkg.price, pkg.currencyCode)}
         </span>
       </div>
@@ -63,13 +56,12 @@ function PackageCard({ pkg, index }: { pkg: PackageResponse; index: number }) {
         {pkg.shortDescription}
       </p>
 
-      {/* Included services */}
-      <ul className="space-y-2 flex-1 mb-6">
+      <ul className="space-y-2.5 flex-1 mb-7">
         {pkg.services?.slice(0, 5).map((s) => (
           <li key={s.id} className="flex items-center gap-2.5">
             <Check className={cn('w-4 h-4 flex-shrink-0', pkg.featured ? 'text-white' : 'text-brand-500')} />
             <span className={cn('text-sm', pkg.featured ? 'text-white/90' : 'text-zinc-600 dark:text-zinc-400')}>
-              {s.service?.name}
+              {s.serviceResponse?.name}
             </span>
           </li>
         ))}
@@ -78,10 +70,8 @@ function PackageCard({ pkg, index }: { pkg: PackageResponse; index: number }) {
       <Link
         href={`/packages/${pkg.slug}`}
         className={cn(
-          'w-full text-center inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm px-5 py-3 transition-all duration-200',
-          pkg.featured
-            ? 'bg-white text-brand-600 hover:bg-white/90'
-            : 'btn-primary'
+          'w-full text-center inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm px-5 py-3 transition-all',
+          pkg.featured ? 'bg-white text-brand-600 hover:bg-white/90' : 'btn-primary'
         )}
       >
         Get Started <ArrowRight className="w-4 h-4" />

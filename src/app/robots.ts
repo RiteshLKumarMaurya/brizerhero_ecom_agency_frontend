@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://brizerhero.com';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  'https://brizerhero.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -15,11 +17,6 @@ export default function robots(): MetadataRoute.Robots {
           '/login',
           '/register',
         ],
-      },
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: ['/dashboard/', '/profile/', '/api/'],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,

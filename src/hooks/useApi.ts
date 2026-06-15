@@ -4,13 +4,13 @@ import {
   technologiesApi, testimonialsApi, bannersApi, featuresApi,
   contactApi, settingsApi, userApi, adminApi,
 } from '@/services/api';
+import type { ContactRequestCreateRequest, ContactRequestSearchRequest ,LeadStatus} from '@/types';
 
 
-import type {
-  ContactRequestCreateRequest,
+import axios from 'axios';
 
-  // ...
-} from '@/types';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 
 // ─── Query Keys ──────────────────────────────────────────────
 export const queryKeys = {
@@ -35,13 +35,18 @@ export const queryKeys = {
   me:                   ['me'] as const,
   adminUsers:           (page?: number) => ['admin', 'users', page] as const,
   adminProjects:        (page?: number) => ['admin', 'projects', page] as const,
+  adminBundles:         (page?: number) => ['admin', 'bundles', page] as const,
   adminServices:        (page?: number) => ['admin', 'services', page] as const,
   adminPackages:        (page?: number) => ['admin', 'packages', page] as const,
   adminTechnologies:    (page?: number) => ['admin', 'technologies', page] as const,
   adminTestimonials:    (page?: number) => ['admin', 'testimonials', page] as const,
+  adminFeatures:        (page?: number) => ['admin', 'features', page] as const,
+  adminLinks:           (page?: number) => ['admin', 'links', page] as const,
+  adminWebLinks:        ['admin', 'web-links'] as const,
   adminBanners:         ['admin', 'banners'] as const,
   adminContacts:        (page?: number) => ['admin', 'contacts', page] as const,
   contactStats:         ['admin', 'contacts', 'stats'] as const,
+  adminSettings:        ['admin', 'settings'] as const,
 };
 
 // ─── Public Hooks ────────────────────────────────────────────
@@ -61,36 +66,71 @@ export function useService(slug: string) {
   });
 }
 
-export function useProjects(page = 0, size = 12) {
-  return useQuery({
-    queryKey: queryKeys.projects(page),
+import type { ProjectResponse } from '@/types';
+
+// Define what our hook returns
+interface ProjectsQueryResult {
+  content: ProjectResponse[];
+  totalPages: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
+
+interface ProjectsData {
+  content: ProjectResponse[];
+  totalPages: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
+export function useProjects(page = 0, pageSize = 9) {
+  return useQuery<ProjectsData>({
+    queryKey: ['projects', page],
     queryFn: async () => {
-      const res = await projectsApi.getAll({ page, size });
-      const data = res.data.data;
-      // Normalise: backend uses "page" field, add "number"/"first" aliases
+      // Backend se raw response lete hain
+      const res = await projectsApi.getAll();
+      
+      // ⚠️ YAHAN SAFE CASTING: backend array return karta hai, but TypeScript sochta hai PageResponse
+      // Isliye pehle unknown, phir array
+      const allProjects = (res.data.data as unknown) as ProjectResponse[];
+      
+      // Client-side pagination
+      const start = page * pageSize;
+      const end = start + pageSize;
+      const paginated = allProjects.slice(start, end);
+      const totalPages = Math.ceil(allProjects.length / pageSize);
+      
       return {
-        ...data,
-        number: data.page,
-        first: data.page === 0,
+        content: paginated,
+        totalPages: totalPages,
+        number: page,
+        first: page === 0,
+        last: page === totalPages - 1 || totalPages === 0,
       };
     },
     staleTime: 5 * 60 * 1000,
   });
 }
 
+
+export function useProject(slug: string) {
+  return useQuery({
+    queryKey: ['project', slug],
+    queryFn: async () => {
+      const res = await projectsApi.getBySlug(slug);
+      return res.data.data;
+    },
+    enabled: !!slug,
+  });
+}
 export function useFeaturedProjects() {
   return useQuery({
     queryKey: queryKeys.featuredProjects,
     queryFn: () => projectsApi.getFeatured().then((r) => r.data.data),
     staleTime: 5 * 60 * 1000,
-  });
-}
-
-export function useProject(slug: string) {
-  return useQuery({
-    queryKey: queryKeys.project(slug),
-    queryFn: () => projectsApi.getBySlug(slug).then((r) => r.data.data),
-    enabled: !!slug,
   });
 }
 
@@ -203,7 +243,7 @@ export function useMe() {
   });
 }
 
-// ─── Mutations ───────────────────────────────────────────────
+// ─── Public Mutations ────────────────────────────────────────
 export function useSubmitContact() {
   return useMutation({
     mutationFn: (data: ContactRequestCreateRequest) => contactApi.submit(data),
@@ -217,47 +257,75 @@ export function useUpdateMe() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.me }),
   });
 }
-
 // ─── Admin Hooks ─────────────────────────────────────────────
-export function useAdminUsers(page = 0) {
+export function useAdminUsers(page = 0, size = 10) {
   return useQuery({
-    queryKey: queryKeys.adminUsers(page),
-    queryFn: () => adminApi.getUsers({ page, size: 20 }).then((r) => r.data.data),
+    queryKey: ['admin', 'users', page, size],
+    queryFn: () => adminApi.getUsers({ page, size }).then((r) => r.data.data),
   });
 }
 
-export function useAdminProjects(page = 0) {
+
+export function useAdminServices(page = 0, size = 10) {
   return useQuery({
-    queryKey: queryKeys.adminProjects(page),
-    queryFn: () => adminApi.getProjects({ page, size: 20 }).then((r) => r.data.data),
+    queryKey: ['admin', 'services', page, size],
+    queryFn: () => adminApi.getServices({ page, size }).then(r => r.data.data),
   });
 }
 
-export function useAdminServices(page = 0) {
-  return useQuery({
-    queryKey: queryKeys.adminServices(page),
-    queryFn: () => adminApi.getServices({ page, size: 20 }).then((r) => r.data.data),
+export function useDeleteService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteService(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'services'] }),
   });
 }
 
-export function useAdminPackages(page = 0) {
-  return useQuery({
-    queryKey: queryKeys.adminPackages(page),
-    queryFn: () => adminApi.getPackages({ page, size: 20 }).then((r) => r.data.data),
+
+export function useDeletePackage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deletePackage(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'packages'] }),
   });
 }
 
-export function useAdminTechnologies(page = 0) {
+export function useAdminTechnologies(page = 0, size = 10) {
   return useQuery({
-    queryKey: queryKeys.adminTechnologies(page),
-    queryFn: () => adminApi.getTechnologies({ page, size: 20 }).then((r) => r.data.data),
+    queryKey: ['admin', 'technologies', page, size],
+    queryFn: () => adminApi.getTechnologies({ page, size }).then((r) => r.data.data),
   });
 }
 
-export function useAdminTestimonials(page = 0) {
+
+// in hooks/useApi.ts
+export function useAdminFeatures(page = 0, size = 10) {
   return useQuery({
-    queryKey: queryKeys.adminTestimonials(page),
-    queryFn: () => adminApi.getTestimonials({ page, size: 20 }).then((r) => r.data.data),
+    queryKey: ['admin', 'features', page, size],
+    queryFn: () => adminApi.getFeatures({ page, size }).then((r) => r.data.data),
+  });
+}
+
+export function useAdminLinks(page = 0, size = 10) {
+  return useQuery({
+    queryKey: queryKeys.adminLinks(page),
+    queryFn: () => adminApi.getLinks({ page, size }).then((r) => r.data.data),
+  });
+}
+
+export function useAdminWebLinks() {
+  return useQuery({
+    queryKey: queryKeys.adminWebLinks,
+    queryFn: () => adminApi.getWebLinks().then((r) => r.data.data),
+  });
+}
+
+
+export function useDeleteTestimonial() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteTestimonial(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'testimonials'] }),
   });
 }
 
@@ -268,17 +336,37 @@ export function useAdminBanners() {
   });
 }
 
-export function useAdminContacts(page = 0) {
+export function useAdminContacts(params: ContactRequestSearchRequest) {
   return useQuery({
-    queryKey: queryKeys.adminContacts(page),
-    queryFn: () => adminApi.getContactRequests({ page, size: 20 }).then((r) => r.data.data),
+    queryKey: ['admin', 'contacts', params],
+    queryFn: () => adminApi.getContactRequests(params).then(r => r.data.data),
   });
 }
 
 export function useContactStats() {
   return useQuery({
-    queryKey: queryKeys.contactStats,
-    queryFn: () => adminApi.getContactStats().then((r) => r.data.data),
+    queryKey: ['admin', 'contacts', 'stats'],
+    queryFn: () => adminApi.getContactStats().then(r => r.data.data),
+  });
+}
+
+import type { SettingResponse, TechnicalIssueHandleSettingResponse } from '@/types';
+
+export function useAdminSettings() {
+  return useQuery({
+    queryKey: queryKeys.adminSettings,
+    queryFn: () => adminApi.getSettings().then((r) => r.data.data),
+  });
+}
+
+export function useUpdateAdminSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData: FormData) => adminApi.updateTechnicalIssueSetting(formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.adminSettings });
+      qc.invalidateQueries({ queryKey: queryKeys.settings }); // also public settings
+    },
   });
 }
 
@@ -303,20 +391,12 @@ export function useDeleteProject() {
 export function useUpdateContactStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: number; status: string }) =>
+    mutationFn: ({ id, status }: { id: number; status: LeadStatus }) =>
       adminApi.updateContactStatus(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'contacts'] });
-      qc.invalidateQueries({ queryKey: queryKeys.contactStats });
+      qc.invalidateQueries({ queryKey: ['admin', 'contacts', 'stats'] });
     },
-  });
-}
-
-export function useDeleteTestimonial() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => adminApi.deleteTestimonial(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'testimonials'] }),
   });
 }
 
@@ -325,5 +405,97 @@ export function useDeleteTechnology() {
   return useMutation({
     mutationFn: (id: number) => adminApi.deleteTechnology(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'technologies'] }),
+  });
+}
+
+export function useDeleteFeature() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteFeature(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'features'] }),
+  });
+}
+
+export function useDeleteLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteLink(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'links'] }),
+  });
+}
+
+export function useAdminBundles(page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['admin', 'bundles', page, size],
+    queryFn: () => adminApi.getBundles({ page, size }).then(r => r.data.data),
+  });
+}
+
+export function useAdminProjects(page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['admin', 'projects', page, size],
+    queryFn: () => adminApi.getProjects({ page, size }).then(r => r.data.data),
+  });
+}
+
+export function useAdminPackages(page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['admin', 'packages', page, size],
+    queryFn: () => adminApi.getPackages({ page, size }).then(r => r.data.data),
+  });
+}
+
+export function useAdminTestimonials(page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['admin', 'testimonials', page, size],
+    queryFn: () => adminApi.getTestimonials({ page, size }).then(r => r.data.data),
+  });
+}
+
+export function useDeleteBundle() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteBundle(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'bundles'] }),
+  });
+}
+
+import type { NotificationResponse } from '@/types';
+
+// ─── Admin Notifications ─────────────────────────────────────
+export function useAdminNotifications(page = 0, size = 10) {
+  return useQuery({
+    queryKey: ['admin', 'notifications', page, size],
+    queryFn: () => adminApi.getNotifications(page, size).then(r => r.data.data),
+  });
+}
+
+export function useSendNotification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData: FormData) => adminApi.sendNotification(formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'notifications'] });
+    },
+  });
+}
+
+export function useDeleteNotification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.deleteNotification(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'notifications'] });
+    },
+  });
+}
+
+export function useResendNotification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminApi.resendNotification(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'notifications'] });
+    },
   });
 }

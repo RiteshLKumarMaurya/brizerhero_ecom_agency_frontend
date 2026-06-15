@@ -5,24 +5,33 @@ import { FeaturedServices } from '@/components/sections/FeaturedServices';
 import { FeaturedProjects } from '@/components/sections/FeaturedProjects';
 import { FeaturedPackages } from '@/components/sections/FeaturedPackages';
 import { TechnologiesSection } from '@/components/sections/TechnologiesSection';
-import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { WhyChooseUs } from '@/components/sections/WhyChooseUs';
+import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { ProcessSection } from '@/components/sections/ProcessSection';
 import { FaqSection } from '@/components/sections/FaqSection';
 import { ContactCta } from '@/components/sections/ContactCta';
+import { BannersSection } from '@/components/sections/BannersSection';
+import { EcomShowcase } from '@/components/sections/EcomShowcase';
 
 export const metadata: Metadata = {
-  title: 'BrizerHero — Premium Software Development Agency',
+  title: 'BrizerHero — Complete E-commerce Software Solutions',
   description:
-    'We build world-class websites, mobile apps, ecommerce solutions, and custom software. Transform your vision into a high-performance digital product.',
+    'BrizerHero builds complete e-commerce software solutions — websites, Android apps, iOS apps, admin panels, delivery apps, and backend APIs. Get your entire digital commerce ecosystem built by experts.',
+  openGraph: {
+    title: 'BrizerHero — Complete E-commerce Software Solutions',
+    description: 'We build complete e-commerce ecosystems for store owners, D2C brands, wholesalers, and manufacturers.',
+    type: 'website',
+  },
 };
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <BannersSection />
       <StatsSection />
       <FeaturedServices />
+      <EcomShowcase />
       <FeaturedProjects />
       <FeaturedPackages />
       <TechnologiesSection />

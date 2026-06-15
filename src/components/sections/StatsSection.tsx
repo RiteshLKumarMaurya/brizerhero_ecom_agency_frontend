@@ -21,13 +21,20 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
     const step = target / 40;
     const timer = setInterval(() => {
       start += step;
-      if (start >= target) { setCount(target); clearInterval(timer); }
-      else setCount(Math.floor(start));
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else setCount(Math.floor(start));
     }, 30);
     return () => clearInterval(timer);
   }, [inView, target]);
 
-  return <span ref={ref}>{count}{suffix}</span>;
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
 }
 
 export function StatsSection() {
@@ -44,7 +51,7 @@ export function StatsSection() {
               transition={{ delay: i * 0.1, duration: 0.5 }}
               className="text-center"
             >
-              <div className="font-display text-4xl md:text-5xl font-bold gradient-text mb-2">
+              <div className="font-display text-4xl md:text-5xl font-bold bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 <Counter target={stat.value} suffix={stat.suffix} />
               </div>
               <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-1">{stat.label}</p>
