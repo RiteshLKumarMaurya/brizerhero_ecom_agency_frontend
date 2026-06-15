@@ -5,10 +5,10 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
 
 const stats = [
-  { value: 50, suffix: '+', label: 'Projects Delivered', description: 'Successful digital products shipped' },
-  { value: 30, suffix: '+', label: 'Happy Clients', description: 'Startups to enterprise businesses' },
+  { value: 5, suffix: '+', label: 'Projects Delivered', description: 'Successful digital products shipped' },
+  { value: 3, suffix: '+', label: 'Happy Clients', description: 'Startups to enterprise businesses' },
   { value: 5, suffix: '★', label: 'Average Rating', description: 'Across all client reviews' },
-  { value: 3, suffix: '+', label: 'Years of Excellence', description: 'Building premium digital products' },
+  { value: 3, suffix: '+', label: 'Months of Excellence', description: 'Building premium digital products' },
 ];
 
 function Counter({ target, suffix }: { target: number; suffix: string }) {

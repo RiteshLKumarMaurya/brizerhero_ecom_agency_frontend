@@ -215,7 +215,7 @@ export function ServicesPageClient() {
         <div className="flex justify-center -mt-4 mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-sm font-medium shadow-sm backdrop-blur-sm">
             <Sparkles className="w-4 h-4" />
-            {services.length} Expert Services • 50+ Successful Projects
+            {services.length} Expert Services • 5+ Successful Projects
           </div>
         </div>
       )}

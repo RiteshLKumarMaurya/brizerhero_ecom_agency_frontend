@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ProjectsPageClient } from './ProjectsPageClient';
 import { Suspense } from 'react';
 
+
 export const metadata: Metadata = {
   title: 'Projects — Our Work & Portfolio',
   description: 'Browse our portfolio of websites, mobile apps, ecommerce stores, and custom software. Real projects, real results.',

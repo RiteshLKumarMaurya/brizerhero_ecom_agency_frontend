@@ -1,3 +1,4 @@
+/// <reference types="react" />
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Zap, Users, Globe, Award, Instagram, Facebook, Linkedin, Github, Mail, Phone } from 'lucide-react';

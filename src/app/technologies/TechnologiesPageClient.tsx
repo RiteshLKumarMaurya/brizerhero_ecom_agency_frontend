@@ -81,7 +81,7 @@ export function TechnologiesPageClient() {
         <div className="flex justify-center pb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-300 text-sm font-medium">
             <Sparkles className="w-4 h-4" />
-            {technologies.length}+ Technologies • 50+ Projects • Global Clients
+            {technologies.length}+ Technologies • 5+ Projects • Global Clients
           </div>
         </div>
       )}

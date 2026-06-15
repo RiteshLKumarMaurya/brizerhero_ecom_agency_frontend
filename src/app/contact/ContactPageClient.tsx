@@ -197,7 +197,7 @@ export function ContactPageClient() {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-brand-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">50+ successful projects delivered</span>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">5+ successful projects delivered</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-brand-500 mt-0.5 flex-shrink-0" />

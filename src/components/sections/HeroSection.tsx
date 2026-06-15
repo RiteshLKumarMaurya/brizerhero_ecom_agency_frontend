@@ -14,7 +14,7 @@ const deliverables = [
   { icon: ShoppingCart, label: 'Backend APIs' },
 ];
 
-const proofPoints = ['50+ stores launched', 'Full‑stack delivery', '30‑day handover'];
+const proofPoints = ['5+ stores launched', 'Full‑stack delivery', '30‑day handover'];
 
 export function HeroSection() {
   return (
