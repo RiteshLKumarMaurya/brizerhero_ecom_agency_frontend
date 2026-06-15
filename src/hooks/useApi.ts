@@ -2,10 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   servicesApi, projectsApi, projectBundlesApi, packagesApi,
   technologiesApi, testimonialsApi, bannersApi, featuresApi,
-  contactApi, settingsApi, userApi, adminApi,
+  contactApi, settingsApi, userApi, adminApi,authApi
 } from '@/services/api';
 import type { ContactRequestCreateRequest, ContactRequestSearchRequest ,LeadStatus} from '@/types';
-
+import { 
+  ChangePhoneNumberRequest, 
+  ChangePasswordWithPhoneRequest,
+  AddressResponse,
+  AddressRequest 
+} from '@/types';
+import toast from 'react-hot-toast';
 
 import axios from 'axios';
 
@@ -47,6 +53,66 @@ export const queryKeys = {
   adminContacts:        (page?: number) => ['admin', 'contacts', page] as const,
   contactStats:         ['admin', 'contacts', 'stats'] as const,
   adminSettings:        ['admin', 'settings'] as const,
+};
+
+
+// Change phone number
+export const useChangePhone = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ChangePhoneNumberRequest) => authApi.changePhone(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast.success('Phone number updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update phone');
+    },
+  });
+};
+
+// Change password
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: ChangePasswordWithPhoneRequest) => authApi.changePassword(data),
+    onSuccess: () => toast.success('Password changed successfully'),
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to change password');
+    },
+  });
+};
+
+// Address hooks (mock – replace with real endpoints)
+export const useAddresses = () => {
+  return useQuery({
+    queryKey: ['addresses'],
+    queryFn: () => userApi.getAddresses(), // implement in api.ts
+  });
+};
+
+export const useAddAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddressRequest) => userApi.addAddress(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
+  });
+};
+
+export const useUpdateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: AddressRequest }) =>
+      userApi.updateAddress(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
+  });
+};
+
+export const useDeleteAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => userApi.deleteAddress(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
+  });
 };
 
 // ─── Public Hooks ────────────────────────────────────────────

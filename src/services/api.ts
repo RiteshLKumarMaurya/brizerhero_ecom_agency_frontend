@@ -11,6 +11,13 @@ import type {
 ContactRequestSearchRequest,ContactRequestStatsResponse,ContactRequestAdminUpdateRequest,LeadStatus
 } from '@/types';
 
+import { 
+  ChangePhoneNumberRequest, 
+  ChangePasswordWithPhoneRequest,
+  AddressResponse,
+  AddressRequest,UpdateProfileRequestDto,ChangePhoneNumberResponse,ChangePasswordWithPhoneResponse
+} from '@/types';
+
 // ─── Auth ────────────────────────────────────────────────────
 export const authApi = {
   googleLogin: (data: GoogleLoginRequest) =>
@@ -25,7 +32,14 @@ export const authApi = {
     apiClient.post<ApiResponse<boolean>>('/api/v1/auth/tokens/validate', { token }),
   logout: (data?: LogoutRequest) =>
     apiClient.post<ApiResponse<string>>('/api/v1/auth/logout', data ?? {}),
+ changePhone: (data: ChangePhoneNumberRequest) =>
+    apiClient.put<ApiResponse<ChangePhoneNumberResponse>>('/auth/phone/change', data),
+  changePassword: (data: ChangePasswordWithPhoneRequest) =>
+    apiClient.put<ApiResponse<ChangePasswordWithPhoneResponse>>('/auth/password/change', data),
+
 };
+
+
 
 // ─── Public Services ─────────────────────────────────────────
 export const servicesApi = {
@@ -133,8 +147,19 @@ export const settingsApi = {
 
 // ─── User (authenticated) ────────────────────────────────────
 export const userApi = {
-  getMe: () => apiClient.get<ApiResponse<UserProfileResponse>>('/api/v1/users/me'),
-  updateMe: (data: { fullName?: string }) => apiClient.patch<ApiResponse<UserProfileResponse>>('/api/v1/users/me', data),
+
+   getMe: () => apiClient.get<ApiResponse<UserProfileResponse>>('/users/me'),
+  updateMe: (data: UpdateProfileRequestDto) =>
+    apiClient.patch<ApiResponse<UserProfileResponse>>('/users/me', data),
+  // Address endpoints (if available – adjust URLs)
+  getAddresses: () => apiClient.get<ApiResponse<AddressResponse[]>>('/addresses'),
+  addAddress: (data: AddressRequest) =>
+    apiClient.post<ApiResponse<AddressResponse>>('/addresses', data),
+  updateAddress: (id: number, data: AddressRequest) =>
+    apiClient.put<ApiResponse<AddressResponse>>(`/addresses/${id}`, data),
+  deleteAddress: (id: number) =>
+    apiClient.delete<ApiResponse<void>>(`/addresses/${id}`),
+
 };
 
 

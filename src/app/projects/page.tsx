@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ProjectsPageClient } from './ProjectsPageClient';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Projects — Our Work & Portfolio',
@@ -10,6 +11,12 @@ export const metadata: Metadata = {
   },
 };
 
+// app/projects/page.tsx (Server Component)
+
 export default function ProjectsPage() {
-  return <ProjectsPageClient />;
+  return (
+    <Suspense fallback={<div className="text-center py-8">Loading projects...</div>}>
+      <ProjectsPageClient />
+    </Suspense>
+  );
 }

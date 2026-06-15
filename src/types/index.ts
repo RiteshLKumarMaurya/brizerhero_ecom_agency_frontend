@@ -661,3 +661,85 @@ export interface ContactRequestAdminUpdateRequest {
   notes?: string;
   assignedToId?: number;
 }
+
+// ============================================================
+// Missing Auth DTOs (from AuthController)
+// ============================================================
+
+// Request to change phone number
+export interface ChangePhoneNumberRequest {
+  currentFullPhoneNumber: string;  // with country code, e.g., "+919876543210"
+  password: string;
+  newFullPhoneNumber: string;
+}
+
+// Response after changing phone number
+export interface ChangePhoneNumberResponse {
+  phoneNumber: string;   // the new phone number
+  message: string;
+}
+
+// Request to change password using phone number
+export interface ChangePasswordWithPhoneRequest {
+  fullPhoneNumber: string;   // with country code
+  currentPassword: string;
+  newPassword: string;
+}
+
+// Response after changing password
+export interface ChangePasswordWithPhoneResponse {
+  message: string;
+}
+
+// Response for refresh token endpoint
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// ============================================================
+// Profile Update Request (from UserController PATCH /me)
+// ============================================================
+export interface UpdateProfileRequestDto {
+  fullName?: string;         // currently the only field allowed by backend
+  // future fields: profileImageUrl, etc.
+}
+
+// ============================================================
+// Address Request DTOs (if you plan to add/edit addresses)
+// ============================================================
+export interface AddressRequest {
+  addressType: AddressType;
+  contactPersonName: string;
+  countryCode: string;
+  contactPhoneNumber: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  district: string;
+  stateName: string;
+  zipCode: string;
+  countryName: string;
+  landmark?: string | null;
+  nearbyPlace?: string | null;
+  directions?: string | null;
+  displayName?: string | null;
+  fullAddress?: string;      // if you want to send pre-formatted
+  googlePlaceId?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  isDefault?: boolean;
+}
+
+// ============================================================
+// Notification Related (if missing)
+// ============================================================
+// LogoutRequest already exists in your TS (under Auth)
+// But ensure it matches the backend:
+// backend expects { deviceToken: string } (optional)
+// Your LogoutRequest is fine.
+
+// ============================================================
+// Google Login (already exists, but keep for completeness)
+// ============================================================
+// GoogleLoginRequest already present

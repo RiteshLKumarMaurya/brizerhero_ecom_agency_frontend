@@ -28,7 +28,7 @@ export function UserMenu() {
     router.push('/');
   };
 
-  const isAdmin = user?.roleName === 'ROLE_ADMIN' || user?.roleName === 'ROLE_SUPER_ADMIN';
+  const isAdmin = user?.roleName === 'ROLE_ADMIN' ;
 
   return (
     <div className="relative">
