@@ -23,6 +23,7 @@ import {
   useDeleteAddress,
   useSetDefaultAddress,
   useChangeProfileImage,
+  useAddPhone,
 } from '@/hooks/useApi';
 import { authApi } from '@/services/api';
 import { getOptimizedUrl } from '@/lib/cdn';
@@ -40,14 +41,23 @@ const tabs = [
 // ─── Main Component ───────────────────────────────────────────
 export function ProfilePageClient() {
   const router = useRouter();
-  const { user: storeUser, isAuthenticated, setUser, clearAuth } = useAuthStore();
+  const {
+    user: storeUser,
+    isAuthenticated,
+    isHydrated,
+    setUser,
+    clearAuth,
+  } = useAuthStore();
+
   const [activeTab, setActiveTab] = useState('profile');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) router.push('/login?redirect=/profile');
-  }, [isAuthenticated, router]);
+    if (isHydrated && !isAuthenticated) {
+      router.replace('/login?redirect=/profile');
+    }
+  }, [isHydrated, isAuthenticated, router]);
 
   // ─── Data & Mutations ──────────────────────────────────────
   const { data: profile, isLoading, refetch } = useMe();
@@ -60,6 +70,7 @@ export function ProfilePageClient() {
   const { mutateAsync: updateAddress, isPending: updatingAddress } = useUpdateAddress();
   const { mutateAsync: deleteAddress, isPending: deletingAddress } = useDeleteAddress();
   const { mutateAsync: setDefaultAddress, isPending: settingDefault } = useSetDefaultAddress();
+  const { mutateAsync: addPhone, isPending: addingPhone } = useAddPhone();
 
   // ─── Profile edit states ──────────────────────────────────
   const [editing, setEditing] = useState(false);
@@ -67,11 +78,17 @@ export function ProfilePageClient() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ─── Phone change modal ────────────────────────────────────
+  // ─── Phone modal states ────────────────────────────────────
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [phoneModalMode, setPhoneModalMode] = useState<'add' | 'change' | null>(null);
+  // Change phone fields
   const [currentFullPhone, setCurrentFullPhone] = useState('');
   const [newFullPhone, setNewFullPhone] = useState('');
   const [phonePassword, setPhonePassword] = useState('');
+  // Add phone fields
+  const [addCountryCode, setAddCountryCode] = useState('+91');
+  const [addPhoneNumber, setAddPhoneNumber] = useState('');
+  const [addPassword, setAddPassword] = useState('');
 
   // ─── Password change states ────────────────────────────────
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -110,11 +127,14 @@ export function ProfilePageClient() {
 
   // ─── Effects ───────────────────────────────────────────────
   useEffect(() => {
-    if (profile) {
-      setFullName(profile.fullName || '');
+    if (!profile) return;
+
+    setFullName(profile.fullName || '');
+
+    if (storeUser?.id !== profile.id) {
       setUser(profile);
     }
-  }, [profile, setUser]);
+  }, [profile, storeUser?.id, setUser]);
 
   // Reset address form when modal opens/closes
   useEffect(() => {
@@ -202,29 +222,66 @@ export function ProfilePageClient() {
     }
   };
 
-  // Phone change
-  const handleChangePhone = async () => {
-    if (!currentFullPhone || !newFullPhone || !phonePassword) {
-      toast.error('Please fill all fields');
-      return;
-    }
-    try {
-      await changePhone({
-        currentFullPhoneNumber: currentFullPhone,
-        newFullPhoneNumber: newFullPhone,
-        password: phonePassword,
-      });
-      setShowPhoneModal(false);
-      setCurrentFullPhone('');
-      setNewFullPhone('');
-      setPhonePassword('');
-      refetch();
-    } catch {
-      // handled in hook
+  // Phone handlers
+  const handleOpenAddPhone = () => {
+    setPhoneModalMode('add');
+    setAddCountryCode('+91');
+    setAddPhoneNumber('');
+    setAddPassword('');
+    setShowPhoneModal(true);
+  };
+
+  const handleOpenChangePhone = () => {
+    setPhoneModalMode('change');
+    setCurrentFullPhone(displayUser?.phone || '');
+    setNewFullPhone('');
+    setPhonePassword('');
+    setShowPhoneModal(true);
+  };
+
+  const handleClosePhoneModal = () => {
+    setShowPhoneModal(false);
+    setPhoneModalMode(null);
+  };
+
+  const handleSubmitPhone = async () => {
+    if (phoneModalMode === 'add') {
+      if (!addCountryCode || !addPhoneNumber || !addPassword) {
+        toast.error('Please fill all fields');
+        return;
+      }
+      // Enforce max 10 digits (backend allows 7-15, but we want a cleaner experience)
+      if (!/^[0-9]{1,10}$/.test(addPhoneNumber)) {
+        toast.error('Phone number must be up to 10 digits');
+        return;
+      }
+      try {
+        await addPhone({ countryCode: addCountryCode, phoneNumber: addPhoneNumber, password: addPassword });
+        handleClosePhoneModal();
+        refetch();
+      } catch {
+        // handled in hook
+      }
+    } else if (phoneModalMode === 'change') {
+      if (!currentFullPhone || !newFullPhone || !phonePassword) {
+        toast.error('Please fill all fields');
+        return;
+      }
+      try {
+        await changePhone({
+          currentFullPhoneNumber: currentFullPhone,
+          newFullPhoneNumber: newFullPhone,
+          password: phonePassword,
+        });
+        handleClosePhoneModal();
+        refetch();
+      } catch {
+        // handled in hook
+      }
     }
   };
 
-  // Password change – now only current & new password
+  // Password change
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('Please fill all password fields');
@@ -305,29 +362,31 @@ export function ProfilePageClient() {
   };
 
   // ─── Render ──────────────────────────────────────────────────
-  if (!isAuthenticated) return null;
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
+  }
 
+  if (!isAuthenticated) {
+    return null;
+  }
   const displayUser = profile || storeUser;
   const memberSince = displayUser?.createdAt ? formatDate(displayUser.createdAt) : 'Recently';
 
   // Get profile image URL – handles both string and object
   const getProfileImageUrl = () => {
     if (avatarPreview) return avatarPreview;
+
     if (!displayUser?.mediaProfile) return null;
+
     if (typeof displayUser.mediaProfile === 'string') {
-      return getOptimizedUrl(displayUser.mediaProfile);
+      return displayUser.mediaProfile;
     }
-    // If it's an object with an originalKey property
-    if (
-      typeof displayUser.mediaProfile === 'object' &&
-      displayUser.mediaProfile !== null &&
-      'originalKey' in displayUser.mediaProfile
-    ) {
-      // mediaProfile may be a MediaResponse-like object with originalKey
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return getOptimizedUrl((displayUser.mediaProfile as any).originalKey);
-    }
-    return null;
+
+    return getOptimizedUrl(displayUser.mediaProfile as any);
   };
 
   const profileImageUrl = getProfileImageUrl();
@@ -373,12 +432,19 @@ export function ProfilePageClient() {
         <AnimatePresence mode="wait">
           {/* PROFILE TAB */}
           {activeTab === 'profile' && (
-            <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-              {/* Avatar & Name Card */}
-              <div className="card-base p-6 md:p-8 rounded-2xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-xl">
-                <div className="flex flex-col md:flex-row md:items-center gap-6">
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              {/* Avatar & Name Card – Premium style */}
+              <div className="card-base p-6 md:p-8 rounded-2xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+                <div className="flex flex-col md:flex-row md:items-center gap-6 relative z-10">
                   <div className="relative group">
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 dark:from-brand-900/40 dark:to-brand-800/40 flex items-center justify-center overflow-hidden ring-4 ring-white dark:ring-zinc-800 shadow-lg">
+                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 dark:from-brand-900/40 dark:to-brand-800/40 flex items-center justify-center overflow-hidden ring-4 ring-white dark:ring-zinc-800 shadow-xl transition-transform group-hover:scale-105">
                       {profileImageUrl ? (
                         <Image
                           src={profileImageUrl}
@@ -386,7 +452,7 @@ export function ProfilePageClient() {
                           width={96}
                           height={96}
                           className="w-full h-full object-cover"
-                          unoptimized // if using external CDN
+                          unoptimized
                         />
                       ) : (
                         <User className="w-10 h-10 text-brand-600 dark:text-brand-400" />
@@ -400,7 +466,7 @@ export function ProfilePageClient() {
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage}
-                      className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-brand-500 text-white shadow-md hover:bg-brand-600 transition-all disabled:opacity-50"
+                      className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-brand-500 text-white shadow-md hover:bg-brand-600 transition-all disabled:opacity-50 ring-2 ring-white dark:ring-zinc-800"
                     >
                       <Camera className="w-3.5 h-3.5" />
                     </button>
@@ -453,11 +519,13 @@ export function ProfilePageClient() {
                 </div>
               </div>
 
-              {/* Contact Information Grid */}
+              {/* Contact Information Grid – Premium Cards */}
               <div className="grid md:grid-cols-2 gap-5">
-                <div className="card-base p-6 rounded-2xl">
+                <div className="card-base p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 rounded-lg bg-brand-50 dark:bg-brand-950/30"><Mail className="w-5 h-5 text-brand-600" /></div>
+                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-950/40 dark:to-brand-900/30">
+                      <Mail className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+                    </div>
                     <h3 className="font-display font-semibold">Email Address</h3>
                   </div>
                   <p className="text-zinc-700 dark:text-zinc-300 font-medium">{displayUser?.email || '—'}</p>
@@ -465,22 +533,45 @@ export function ProfilePageClient() {
                     <CheckCircle className="w-3 h-3 text-emerald-500" /> Verified
                   </p>
                 </div>
-                <div className="card-base p-6 rounded-2xl">
+
+                {/* Phone Card – Dynamic Add/Change */}
+                <div className="card-base p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-brand-50 dark:bg-brand-950/30"><Phone className="w-5 h-5 text-brand-600" /></div>
+                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-950/40 dark:to-brand-900/30">
+                        <Phone className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+                      </div>
                       <h3 className="font-display font-semibold">Phone Number</h3>
                     </div>
-                    <button onClick={() => setShowPhoneModal(true)} className="text-xs text-brand-500 hover:underline transition">
-                      Change
-                    </button>
+                    {displayUser?.phone ? (
+                      <button
+                        onClick={handleOpenChangePhone}
+                        className="text-xs font-medium text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition flex items-center gap-1 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/30 hover:bg-brand-100 dark:hover:bg-brand-950/50"
+                      >
+                        <Edit2 className="w-3 h-3" /> Change
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleOpenAddPhone}
+                        className="text-xs font-medium text-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/50"
+                      >
+                        <Plus className="w-3 h-3" /> Add
+                      </button>
+                    )}
                   </div>
-                  <p className="text-zinc-700 dark:text-zinc-300 font-medium">{displayUser?.phone || 'Not provided'}</p>
+                  <p className="text-zinc-700 dark:text-zinc-300 font-medium">
+                    {displayUser?.phone || 'Not provided'}
+                  </p>
+                  {!displayUser?.phone && (
+                    <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Add a phone number for better account recovery
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Account Status */}
-              <div className="card-base p-6 rounded-2xl">
+              <div className="card-base p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg">
                 <h3 className="font-display font-semibold mb-4">Account Status</h3>
                 <div className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800">
                   <span className="text-sm text-zinc-600 dark:text-zinc-400">Status</span>
@@ -497,7 +588,13 @@ export function ProfilePageClient() {
 
           {/* ADDRESSES TAB */}
           {activeTab === 'addresses' && (
-            <motion.div key="addresses" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+            <motion.div
+              key="addresses"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
               <div className="flex justify-between items-center">
                 <h2 className="font-display text-2xl font-bold">Saved Addresses</h2>
                 <button onClick={handleAddAddress} className="btn-primary gap-2">
@@ -725,8 +822,14 @@ export function ProfilePageClient() {
 
           {/* SECURITY TAB */}
           {activeTab === 'security' && (
-            <motion.div key="security" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-              <div className="card-base p-6 md:p-8 rounded-2xl">
+            <motion.div
+              key="security"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="card-base p-6 md:p-8 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg">
                 <div className="flex items-center gap-3 mb-6">
                   <Key className="w-5 h-5 text-amber-600" />
                   <h3 className="font-display font-semibold">Change Password</h3>
@@ -793,7 +896,7 @@ export function ProfilePageClient() {
                   </button>
                 </div>
               </div>
-              <div className="card-base p-6 rounded-2xl">
+              <div className="card-base p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg">
                 <h3 className="font-display font-semibold mb-2">Two-Factor Authentication</h3>
                 <p className="text-sm text-zinc-500">Enhance security – coming soon</p>
                 <button className="btn-secondary text-sm mt-3" disabled>Set up →</button>
@@ -803,8 +906,14 @@ export function ProfilePageClient() {
 
           {/* WEB LINKS TAB */}
           {activeTab === 'webLinks' && (
-            <motion.div key="webLinks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-              <div className="card-base p-6 rounded-2xl">
+            <motion.div
+              key="webLinks"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-6"
+            >
+              <div className="card-base p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50 shadow-lg">
                 <h3 className="font-display font-semibold mb-4">Your Website Links</h3>
                 {displayUser?.webLinks?.length ? (
                   <ul className="space-y-3">
@@ -836,7 +945,7 @@ export function ProfilePageClient() {
         </div>
       </div>
 
-      {/* ─── PHONE CHANGE MODAL ────────────────────────────────── */}
+      {/* ─── PHONE MODAL (Add / Change) ────────────────────────── */}
       <AnimatePresence>
         {showPhoneModal && (
           <motion.div
@@ -844,7 +953,7 @@ export function ProfilePageClient() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowPhoneModal(false)}
+            onClick={handleClosePhoneModal}
           >
             <motion.div
               initial={{ scale: 0.9 }}
@@ -853,39 +962,97 @@ export function ProfilePageClient() {
               className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-display text-xl font-bold mb-4">Change Phone Number</h3>
+              <h3 className="font-display text-xl font-bold mb-4">
+                {phoneModalMode === 'add' ? 'Add Phone Number' : 'Change Phone Number'}
+              </h3>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Current phone (full format)</label>
-                  <input
-                    value={currentFullPhone}
-                    onChange={(e) => setCurrentFullPhone(e.target.value)}
-                    className="input-base w-full"
-                    placeholder="+919876543210"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">New phone (full format)</label>
-                  <input
-                    value={newFullPhone}
-                    onChange={(e) => setNewFullPhone(e.target.value)}
-                    className="input-base w-full"
-                    placeholder="+919876543211"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Password</label>
-                  <input
-                    type="password"
-                    value={phonePassword}
-                    onChange={(e) => setPhonePassword(e.target.value)}
-                    className="input-base w-full"
-                  />
-                </div>
+                {phoneModalMode === 'add' ? (
+                  // ── Add Phone Fields ──
+                  <>
+                    {/* Country Code + Phone Number in a single row */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Phone Number</label>
+                      <div className="flex gap-2">
+                        <div className="w-1/3">
+                          <input
+                            value={addCountryCode}
+                            onChange={(e) => setAddCountryCode(e.target.value)}
+                            className="input-base w-full"
+                            placeholder="+91"
+                          />
+                        </div>
+                        <div className="w-2/3">
+                          <input
+                            value={addPhoneNumber}
+                            onChange={(e) => setAddPhoneNumber(e.target.value)}
+                            className="input-base w-full"
+                            placeholder="9876543210"
+                            maxLength={10}
+                            pattern="[0-9]*"
+                            inputMode="numeric"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-zinc-400 mt-1">Enter up to 10 digits</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Password</label>
+                      <input
+                        type="password"
+                        value={addPassword}
+                        onChange={(e) => setAddPassword(e.target.value)}
+                        className="input-base w-full"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  // ── Change Phone Fields ──
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Current phone (full format)</label>
+                      <input
+                        value={currentFullPhone}
+                        onChange={(e) => setCurrentFullPhone(e.target.value)}
+                        className="input-base w-full"
+                        placeholder="+919876543210"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">New phone (full format)</label>
+                      <input
+                        value={newFullPhone}
+                        onChange={(e) => setNewFullPhone(e.target.value)}
+                        className="input-base w-full"
+                        placeholder="+919876543211"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Password</label>
+                      <input
+                        type="password"
+                        value={phonePassword}
+                        onChange={(e) => setPhonePassword(e.target.value)}
+                        className="input-base w-full"
+                      />
+                    </div>
+                  </>
+                )}
                 <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowPhoneModal(false)} className="flex-1 btn-secondary">Cancel</button>
-                  <button onClick={handleChangePhone} disabled={changingPhone} className="flex-1 btn-primary">
-                    {changingPhone ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Update'}
+                  <button
+                    onClick={handleClosePhoneModal}
+                    className="flex-1 btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitPhone}
+                    disabled={addingPhone || changingPhone}
+                    className="flex-1 btn-primary justify-center gap-2"
+                  >
+                    {(addingPhone || changingPhone) && (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    )}
+                    {phoneModalMode === 'add' ? 'Add' : 'Update'}
                   </button>
                 </div>
               </div>

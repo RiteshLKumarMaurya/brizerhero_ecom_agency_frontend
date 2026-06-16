@@ -178,6 +178,9 @@ export const userApi = {
 
   setDefaultAddress: (id: number) =>
     apiClient.patch<ApiResponse<void>>(`/api/v1/addresses/me/${id}/default`),
+
+  addPhone: (data: { countryCode: string; phoneNumber: string; password: string }) =>
+  apiClient.post<ApiResponse<UserProfileResponse>>('/api/v1/users/add-phone-pass', data),
 };
 
 

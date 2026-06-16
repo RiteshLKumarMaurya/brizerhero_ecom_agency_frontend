@@ -1,4 +1,4 @@
-const CDN_BASE = process.env.NEXT_PUBLIC_CDN_URL || 'https://cdn.brizerhero.com';
+const CDN_BASE = process.env.NEXT_PUBLIC_CDN_URL || 'https://media.brizerhero.com';
 
 export function getCdnUrl(key: string | null | undefined): string {
   if (!key) return '/images/placeholder.webp';

@@ -626,4 +626,18 @@ export const useChangeProfileImage = () => {
   });
 };
 
-
+// hooks/useApi.ts
+export const useAddPhone = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { countryCode: string; phoneNumber: string; password: string }) =>
+      userApi.addPhone(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast.success('Phone number added successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to add phone');
+    },
+  });
+};
