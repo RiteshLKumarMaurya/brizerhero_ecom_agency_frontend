@@ -4,12 +4,11 @@ import {
   technologiesApi, testimonialsApi, bannersApi, featuresApi,
   contactApi, settingsApi, userApi, adminApi,authApi
 } from '@/services/api';
-import type { ContactRequestCreateRequest, ContactRequestSearchRequest ,LeadStatus} from '@/types';
+import type { ContactRequestCreateRequest, ContactRequestSearchRequest ,LeadStatus,CreateAddressRequest,UpdateAddressRequest} from '@/types';
 import { 
   ChangePhoneNumberRequest, 
-  ChangePasswordWithPhoneRequest,
+  ChangePassworRequest,ChangePasswordResponse,
   AddressResponse,
-  AddressRequest 
 } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -72,46 +71,15 @@ export const useChangePhone = () => {
 };
 
 // Change password
+// Change password – no phone needed
 export const useChangePassword = () => {
   return useMutation({
-    mutationFn: (data: ChangePasswordWithPhoneRequest) => authApi.changePassword(data),
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      authApi.changePassword(data),
     onSuccess: () => toast.success('Password changed successfully'),
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to change password');
     },
-  });
-};
-
-// Address hooks (mock – replace with real endpoints)
-export const useAddresses = () => {
-  return useQuery({
-    queryKey: ['addresses'],
-    queryFn: () => userApi.getAddresses(), // implement in api.ts
-  });
-};
-
-export const useAddAddress = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: AddressRequest) => userApi.addAddress(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
-  });
-};
-
-export const useUpdateAddress = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: AddressRequest }) =>
-      userApi.updateAddress(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
-  });
-};
-
-export const useDeleteAddress = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => userApi.deleteAddress(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['addresses'] }),
   });
 };
 
@@ -565,3 +533,97 @@ export function useResendNotification() {
     },
   });
 }
+
+
+// ============================================================
+//  ADDRESS HOOKS (real backend)
+// ============================================================
+
+export const useAddresses = () => {
+  return useQuery({
+    queryKey: ['addresses'],
+    queryFn: () => userApi.getAddresses().then(r => r.data.data),
+    staleTime: 2 * 60 * 1000,
+  });
+};
+
+export const useAddAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateAddressRequest) => userApi.addAddress(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast.success('Address added successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to add address');
+    },
+  });
+};
+
+export const useUpdateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateAddressRequest }) =>
+      userApi.updateAddress(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast.success('Address updated');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update address');
+    },
+  });
+};
+
+export const useDeleteAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => userApi.deleteAddress(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast.success('Address deleted');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete address');
+    },
+  });
+};
+
+export const useSetDefaultAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => userApi.setDefaultAddress(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast.success('Default address updated');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to set default');
+    },
+  });
+};
+
+// ============================================================
+//  PROFILE IMAGE HOOK
+// ============================================================
+
+export const useChangeProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append('imageFile', file);
+      return userApi.changeProfileImage(formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast.success('Profile image updated');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update image');
+    },
+  });
+};
+
+

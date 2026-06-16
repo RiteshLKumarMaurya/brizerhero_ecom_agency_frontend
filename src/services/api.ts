@@ -8,15 +8,17 @@ import type {
   GoogleLoginRequest, LoginRequest, PhonePasswordRegisterRequest,TechnicalIssueHandleSettingResponse,SettingResponse,
   LogoutRequest, UserProfileResponse, AdminUserSummaryResponse,NotificationResponse,
   FeatureResponse, LinkResponse, WebLinkResponse, UpdateContactStatusRequest,
-ContactRequestSearchRequest,ContactRequestStatsResponse,ContactRequestAdminUpdateRequest,LeadStatus
+  MediaResponse,
+ContactRequestStatsResponse,ContactRequestAdminUpdateRequest,LeadStatus,ContactRequestSearchRequest
 } from '@/types';
 
 import { 
   ChangePhoneNumberRequest, 
-  ChangePasswordWithPhoneRequest,
-  AddressResponse,
-  AddressRequest,UpdateProfileRequestDto,ChangePhoneNumberResponse,ChangePasswordWithPhoneResponse
+  ChangePassworRequest,ChangePasswordResponse,
+  AddressResponse,CreateAddressRequest,UpdateAddressRequest,
+  UpdateProfileRequestDto,ChangePhoneNumberResponse,
 } from '@/types';
+import { toast } from 'react-hot-toast';
 
 // ─── Auth ────────────────────────────────────────────────────
 export const authApi = {
@@ -33,10 +35,10 @@ export const authApi = {
   logout: (data?: LogoutRequest) =>
     apiClient.post<ApiResponse<string>>('/api/v1/auth/logout', data ?? {}),
  changePhone: (data: ChangePhoneNumberRequest) =>
-    apiClient.put<ApiResponse<ChangePhoneNumberResponse>>('/auth/phone/change', data),
-  changePassword: (data: ChangePasswordWithPhoneRequest) =>
-    apiClient.put<ApiResponse<ChangePasswordWithPhoneResponse>>('/auth/password/change', data),
-
+    apiClient.put<ApiResponse<ChangePhoneNumberResponse>>('/api/v1/auth/phone/change', data),
+// In authApi object
+changePassword: (data: { currentPassword: string; newPassword: string }) =>
+  apiClient.put<ApiResponse<ChangePasswordResponse>>('/api/v1/auth/password/change', data),
 };
 
 
@@ -145,22 +147,40 @@ export const settingsApi = {
     apiClient.get<ApiResponse<{ enabled: boolean; message: string }>>('/api/v1/public/settings/technical-issue'),
 };
 
+
 // ─── User (authenticated) ────────────────────────────────────
 export const userApi = {
+  getMe: () => apiClient.get<ApiResponse<UserProfileResponse>>('/api/v1/users/me'),
 
-   getMe: () => apiClient.get<ApiResponse<UserProfileResponse>>('/users/me'),
   updateMe: (data: UpdateProfileRequestDto) =>
-    apiClient.patch<ApiResponse<UserProfileResponse>>('/users/me', data),
-  // Address endpoints (if available – adjust URLs)
-  getAddresses: () => apiClient.get<ApiResponse<AddressResponse[]>>('/addresses'),
-  addAddress: (data: AddressRequest) =>
-    apiClient.post<ApiResponse<AddressResponse>>('/addresses', data),
-  updateAddress: (id: number, data: AddressRequest) =>
-    apiClient.put<ApiResponse<AddressResponse>>(`/addresses/${id}`, data),
-  deleteAddress: (id: number) =>
-    apiClient.delete<ApiResponse<void>>(`/addresses/${id}`),
+    apiClient.patch<ApiResponse<UserProfileResponse>>('/api/v1/users/me', data),
 
+  // ✅ Profile image upload (multipart)
+  changeProfileImage: (formData: FormData) =>
+    apiClient.patch<ApiResponse<MediaResponse>>(
+      '/api/v1/users/profile-image/change',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    ),
+
+  // ✅ Addresses – correct base path (matches your AddressController)
+  getAddresses: () =>
+    apiClient.get<ApiResponse<AddressResponse[]>>('/api/v1/addresses/me'),
+
+  addAddress: (data: CreateAddressRequest) =>
+    apiClient.post<ApiResponse<AddressResponse>>('/api/v1/addresses/me', data),
+
+  updateAddress: (id: number, data: UpdateAddressRequest) =>
+    apiClient.put<ApiResponse<AddressResponse>>(`/api/v1/addresses/me/${id}`, data),
+
+  deleteAddress: (id: number) =>
+    apiClient.delete<ApiResponse<void>>(`/api/v1/addresses/me/${id}`),
+
+  setDefaultAddress: (id: number) =>
+    apiClient.patch<ApiResponse<void>>(`/api/v1/addresses/me/${id}/default`),
 };
+
+
 
 
 
@@ -428,6 +448,23 @@ deleteContactRequest: (id: number) =>
 };
 
 
+// ─── Notifications (User) ────────────────────────────────────
+export const notificationsApi = {
+  getMyNotifications: (page = 0, size = 10) =>
+    apiClient.get<ApiResponse<PageResponse<NotificationResponse>>>('/api/v1/notifications/me', {
+      params: { page, size, sort: 'createdAt,desc' },
+    }),
+  getUnreadCount: () =>
+    apiClient.get<ApiResponse<number>>('/api/v1/notifications/me/unread-count'),
+  markAsRead: (id: number) =>
+    apiClient.patch<ApiResponse<void>>(`/api/v1/notifications/${id}/mark-as-read`),
+  markAllAsRead: () =>
+    apiClient.patch<ApiResponse<void>>('/api/v1/notifications/me/read-all'),
+  clearAll: () =>
+    apiClient.delete<ApiResponse<void>>('/api/v1/notifications/me'),
+  deleteOne: (id: number) =>
+    apiClient.delete<ApiResponse<void>>(`/api/v1/notifications/me/${id}`),
+};
 
 
 

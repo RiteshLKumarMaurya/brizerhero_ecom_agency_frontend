@@ -1,16 +1,16 @@
 'use client';
 
-import { Logo } from '@/components/common/Logo';
-
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, Moon, Sun } from 'lucide-react';
+import { Menu, X, Moon, Sun, Bell } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { NotificationBell } from '@/components/common/NotificationBell';
+import { Logo } from '@/components/common/Logo';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -19,8 +19,8 @@ const navLinks = [
   { href: '/packages', label: 'Packages' },
   { href: '/technologies', label: 'Technologies' },
   { href: '/testimonials', label: 'Testimonials' },
-  { href: '/how-to-use', label: 'Guide' },   // 👈 new link
-  { href: '/about', label: 'About' },  
+  { href: '/how-to-use', label: 'Guide' },
+  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -52,8 +52,9 @@ export function Navbar() {
       >
         <nav className="section-container">
           <div className="flex items-center justify-between h-20">
-                  <Logo variant="full" />
+            <Logo variant="full" />
 
+            {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <Link
@@ -71,7 +72,9 @@ export function Navbar() {
               ))}
             </div>
 
+            {/* Right Actions */}
             <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
               {mounted && (
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -82,6 +85,10 @@ export function Navbar() {
                 </button>
               )}
 
+              {/* Notification Bell – only for authenticated users */}
+              {isAuthenticated && <NotificationBell />}
+
+              {/* Auth / User Menu */}
               <div className="hidden md:flex items-center gap-2">
                 {isAuthenticated ? (
                   <UserMenu />
@@ -97,6 +104,7 @@ export function Navbar() {
                 )}
               </div>
 
+              {/* Mobile Menu Toggle */}
               <button
                 className="lg:hidden btn-ghost p-2"
                 onClick={() => setMobileOpen(!mobileOpen)}
@@ -109,6 +117,7 @@ export function Navbar() {
         </nav>
       </header>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -136,9 +145,14 @@ export function Navbar() {
                 ))}
                 <div className="pt-3 mt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
                   {isAuthenticated ? (
-                    <Link href="/profile" className="btn-secondary w-full text-center">
-                      My Profile
-                    </Link>
+                    <>
+                      <Link href="/notifications" className="btn-secondary w-full text-center gap-2">
+                        <Bell className="w-4 h-4" /> Notifications
+                      </Link>
+                      <Link href="/profile" className="btn-secondary w-full text-center">
+                        My Profile
+                      </Link>
+                    </>
                   ) : (
                     <>
                       <Link href="/login" className="btn-secondary w-full text-center">

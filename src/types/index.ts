@@ -55,7 +55,11 @@ export interface PhonePasswordRegisterResponse {
   tokenResponse: TokenResponse;
 }
 
-export interface GoogleLoginRequest { idToken: string; }
+export interface GoogleLoginRequest {
+  idToken: string;
+  fcmToken?: string;
+  device?: string;
+}
 
 export interface LoginRequest {
   fullPhoneNumber: string;
@@ -382,41 +386,6 @@ export interface ContactRequestCreateRequest {
 }
 
 
-// ============================================================
-// Address
-// ============================================================
-// ============================================================
-// Addresses
-// ============================================================
-export type AddressType = 'HOME' | 'CLINIC' | 'BUSINESS' | 'BILLING' | 'OTHER';
-
-export interface AddressResponse {
-  id: number;
-  addressType: AddressType;
-  contactPersonName: string;
-  countryCode: string;
-  contactPhoneNumber: string;
-  addressLine1: string;
-  addressLine2: string | null;
-  city: string;
-  district: string;
-  stateName: string;
-  zipCode: string;
-  countryName: string;
-  landmark: string | null;
-  nearbyPlace: string | null;
-  directions: string | null;
-  displayName: string | null;
-  fullAddress: string;
-  googlePlaceId: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  isDefault: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 
 //admin user
 
@@ -680,14 +649,13 @@ export interface ChangePhoneNumberResponse {
 }
 
 // Request to change password using phone number
-export interface ChangePasswordWithPhoneRequest {
-  fullPhoneNumber: string;   // with country code
+export interface ChangePassworRequest {
   currentPassword: string;
   newPassword: string;
 }
 
 // Response after changing password
-export interface ChangePasswordWithPhoneResponse {
+export interface ChangePasswordResponse {
   message: string;
 }
 
@@ -704,32 +672,60 @@ export interface UpdateProfileRequestDto {
   fullName?: string;         // currently the only field allowed by backend
   // future fields: profileImageUrl, etc.
 }
+export type AddressType = 'HOME' | 'CLINIC' | 'BUSINESS' | 'BILLING' | 'OTHER';
 
-// ============================================================
-// Address Request DTOs (if you plan to add/edit addresses)
-// ============================================================
-export interface AddressRequest {
+export interface AddressResponse {
+  id: number;
   addressType: AddressType;
-  contactPersonName: string;
-  countryCode: string;
-  contactPhoneNumber: string;
+  contactPersonName?: string;
+  countryCode?: string;
+  contactPhoneNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  district?: string;
+  stateName?: string;
+  zipCode?: string;
+  countryName?: string;
+  landmark?: string;
+  nearbyPlace?: string;
+  directions?: string;
+  displayName?: string;
+  fullAddress?: string;
+  googlePlaceId?: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateAddressRequest {
+  addressType: AddressType;
+  countryCode?: string;
+  contactPersonName?: string;
+  contactPhoneNumber?: string;
   addressLine1: string;
-  addressLine2?: string | null;
+  addressLine2?: string;
   city: string;
-  district: string;
+  district?: string;
   stateName: string;
   zipCode: string;
-  countryName: string;
-  landmark?: string | null;
-  nearbyPlace?: string | null;
-  directions?: string | null;
-  displayName?: string | null;
-  fullAddress?: string;      // if you want to send pre-formatted
-  googlePlaceId?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  countryName?: string;
+  landmark?: string;
+  nearbyPlace?: string;
+  directions?: string;
+  displayName?: string;
+  fullAddress?: string;
+  googlePlaceId?: string;
+  latitude?: number;
+  longitude?: number;
   isDefault?: boolean;
+  isActive?: boolean;
 }
+
+export type UpdateAddressRequest = Partial<CreateAddressRequest>;
 
 // ============================================================
 // Notification Related (if missing)

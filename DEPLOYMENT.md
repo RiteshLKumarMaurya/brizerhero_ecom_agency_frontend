@@ -26,7 +26,7 @@ git push -u origin main
 Go to **Project Settings → Environment Variables** and add:
 
 ```
-NEXT_PUBLIC_API_URL              = https://api.brizerhero.com
+NEXT_PUBLIC_API_URL              = https://api.briizerhero.com
 NEXT_PUBLIC_SITE_URL             = https://brizerhero.com
 NEXT_PUBLIC_GOOGLE_CLIENT_ID     = your-client-id.apps.googleusercontent.com
 NEXT_PUBLIC_CDN_URL              = https://cdn.brizerhero.com

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/services/api';
+import { getFCMToken } from '@/lib/firebase'; // ✅ ADDED
 
 declare global {
   interface Window {
@@ -35,7 +36,16 @@ export function useGoogleAuth() {
     async (credential: string, redirectTo = '/') => {
       setLoading(true);
       try {
-        const { data } = await authApi.googleLogin({ idToken: credential });
+        // 🔥 1. Get FCM token (if available)
+        const fcmToken = await getFCMToken();
+
+        // 2. Call backend with idToken + fcmToken + device
+        const { data } = await authApi.googleLogin({
+          idToken: credential,
+          fcmToken: fcmToken || undefined,
+          device: 'web',
+        });
+
         const { user, tokens } = data.data;
         setAuth(user, tokens.accessToken, tokens.refreshToken);
         toast.success(`Welcome${user.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!`);
