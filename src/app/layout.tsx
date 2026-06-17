@@ -1,4 +1,3 @@
-tsx
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 
