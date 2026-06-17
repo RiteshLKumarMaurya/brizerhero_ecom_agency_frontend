@@ -1,5 +1,7 @@
+tsx
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+
 import './globals.css';
 
 import { Providers } from '@/components/layout/Providers';
@@ -10,8 +12,6 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
-  preload: true,
-  fallback: ['system-ui', 'sans-serif'],
 });
 
 export const viewport: Viewport = {
@@ -21,9 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://brizerhero.com'
-  ),
+  metadataBase: new URL('https://brizerhero.com'),
 
   title: {
     default: 'BrizerHero — Website, App & Software Development Agency',
@@ -31,17 +29,18 @@ export const metadata: Metadata = {
   },
 
   description:
-    'BrizerHero is a premium software development agency building websites, mobile apps, ecommerce solutions, AI products, and custom software for startups, businesses, and entrepreneurs.',
+    'BrizerHero builds websites, Android apps, iOS apps, ecommerce solutions, admin panels, delivery apps, SaaS products and custom software for startups and businesses.',
 
   keywords: [
     'website development company',
-    'app development company',
     'software development agency',
-    'ecommerce development company',
-    'custom software development',
     'mobile app development',
-    'AI solutions',
-    'startup development',
+    'android app development',
+    'ios app development',
+    'ecommerce development',
+    'saas development',
+    'custom software',
+    'startup software development',
     'BrizerHero',
   ],
 
@@ -68,10 +67,33 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      {
+        url: '/favicon.ico',
+      },
+      {
+        url: '/android-chrome-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: '/android-chrome-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+
+    apple: [
+      {
+        url: '/apple-touch-icon.png',
+        sizes: '180x180',
+      },
+    ],
+
+    shortcut: ['/favicon.ico'],
   },
+
+  manifest: '/site.webmanifest',
 
   openGraph: {
     type: 'website',
@@ -80,7 +102,8 @@ export const metadata: Metadata = {
     siteName: 'BrizerHero',
     title: 'BrizerHero — Website, App & Software Development Agency',
     description:
-      'Premium software development agency for startups and businesses.',
+      'Premium software development agency building websites, mobile apps, ecommerce solutions and SaaS products.',
+
     images: [
       {
         url: '/og-image.png',
@@ -95,7 +118,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'BrizerHero — Website, App & Software Development Agency',
     description:
-      'Premium software development agency for startups and businesses.',
+      'Premium software development agency building websites, mobile apps, ecommerce solutions and SaaS products.',
     images: ['/og-image.png'],
   },
 
@@ -114,14 +137,16 @@ export default function RootLayout({
     '@type': 'Organization',
 
     name: 'BrizerHero',
+
     url: 'https://brizerhero.com',
 
-    logo: 'https://brizerhero.com/logo.svg',
+    logo: 'https://brizerhero.com/logo.png',
 
     description:
-      'Premium software development agency building websites, mobile apps, ecommerce solutions, AI products, and custom software.',
+      'BrizerHero builds websites, mobile apps, ecommerce platforms, SaaS products and custom software.',
 
     email: 'brizerhero@gmail.com',
+
     telephone: '+918651600737',
 
     address: {
@@ -133,9 +158,11 @@ export default function RootLayout({
 
     contactPoint: {
       '@type': 'ContactPoint',
-      contactType: 'customer service',
+      contactType: 'customer support',
       availableLanguage: ['English', 'Hindi'],
     },
+
+    sameAs: [],
   };
 
   return (
@@ -145,14 +172,28 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="manifest" href="/site.webmanifest" />
+
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+
         <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
+          rel="icon"
+          type="image/png"
+          sizes="192x192"
+          href="/android-chrome-192x192.png"
         />
 
-        <link rel="manifest" href="/site.webmanifest" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="512x512"
+          href="/android-chrome-512x512.png"
+        />
+
+        <link
+          rel="apple-touch-icon"
+          href="/apple-touch-icon.png"
+        />
 
         <script
           type="application/ld+json"
@@ -162,15 +203,18 @@ export default function RootLayout({
         />
       </head>
 
-      <body className="min-h-screen bg-white dark:bg-zinc-950 font-sans antialiased">
+      <body className="min-h-screen bg-white dark:bg-zinc-950 antialiased">
         <Providers>
           <NavbarWrapper />
+
           <main className="pt-16 md:pt-18">
             {children}
           </main>
+
           <Footer />
         </Providers>
       </body>
     </html>
   );
 }
+
