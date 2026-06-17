@@ -11,12 +11,13 @@ import { useService } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
 import type { ServiceResponse, ServiceFeatureResponse, ServiceTechnologyResponse } from '@/types';
+import { useState } from 'react';
 
 interface Props { 
   slug: string;
 }
 
-// Animation variants
+// ─── Animations ────────────────────────────────────────────────────────────
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
@@ -30,18 +31,13 @@ const staggerContainer = {
   }
 };
 
-const cardHover = {
-  rest: { scale: 1, y: 0 },
-  hover: { scale: 1.02, y: -5, transition: { duration: 0.2, type: 'spring', stiffness: 300 } }
-};
-
+// ─── Component ────────────────────────────────────────────────────────────
 export function ServiceDetailClient({ slug }: Props) {
   const { data: service, isLoading, error, refetch } = useService(slug);
-  
-  // Scroll progress bar
   const { scrollYProgress } = useScroll();
   const width = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
+  // ── Loading ──
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32">
@@ -72,6 +68,7 @@ export function ServiceDetailClient({ slug }: Props) {
     );
   }
 
+  // ── Error ──
   if (error || !service) {
     return (
       <div className="min-h-[70vh] pt-32 flex items-center justify-center px-4">
@@ -100,17 +97,21 @@ export function ServiceDetailClient({ slug }: Props) {
     );
   }
 
+  // ── Icon fallback state ──
+  const [iconError, setIconError] = useState(false);
+  const iconSrc = service.iconImage ? getOptimizedUrl(service.iconImage) : null;
+
+  // ── Success ──
   return (
     <>
-      {/* Reading Progress Bar */}
+      {/* Progress Bar */}
       <motion.div 
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-violet-500 z-50 origin-left"
         style={{ scaleX: width }}
       />
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background gradient orbs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 -left-32 w-80 h-80 bg-brand-500/20 rounded-full blur-[100px]" />
           <div className="absolute bottom-10 -right-32 w-96 h-96 bg-violet-500/15 rounded-full blur-[120px]" />
@@ -137,23 +138,25 @@ export function ServiceDetailClient({ slug }: Props) {
             animate="visible"
             className="grid lg:grid-cols-5 gap-12 items-start"
           >
-            {/* Main Content */}
+            {/* Main content */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Icon */}
+              {/* ─── Icon – prominent & safe ─── */}
               <motion.div variants={fadeInUp}>
                 <div className="relative inline-flex">
-                  <div className="absolute inset-0 bg-brand-500/20 rounded-2xl blur-xl" />
-                  <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg flex items-center justify-center">
-                    {service.iconImage ? (
+                  <div className="absolute inset-0 bg-brand-500/20 rounded-2xl blur-2xl" />
+                  <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-xl flex items-center justify-center">
+                    {iconSrc && !iconError ? (
                       <Image
-                        src={getOptimizedUrl(service.iconImage)}
+                        src={iconSrc}
                         alt={service.name}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 object-contain brightness-0 invert"
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 object-contain"
+                        onError={() => setIconError(true)}
+                        unoptimized // fallback if domain not configured
                       />
                     ) : (
-                      <Zap className="w-8 h-8 text-white" />
+                      <Zap className="w-10 h-10 text-white" />
                     )}
                   </div>
                 </div>
@@ -173,7 +176,7 @@ export function ServiceDetailClient({ slug }: Props) {
                 {service.shortDescription}
               </motion.p>
 
-              {/* External Links */}
+              {/* External links */}
               {service.serviceLinks && service.serviceLinks.length > 0 && (
                 <motion.div variants={fadeInUp} className="flex flex-wrap gap-3 pt-2">
                   {service.serviceLinks.map((linkItem) => (
@@ -192,7 +195,7 @@ export function ServiceDetailClient({ slug }: Props) {
               )}
             </div>
 
-            {/* CTA Card */}
+            {/* CTA Card – unchanged */}
             <motion.div 
               variants={fadeInUp}
               className="lg:col-span-2 lg:sticky lg:top-28"
@@ -221,7 +224,7 @@ export function ServiceDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* Description Section */}
+      {/* Description */}
       {service.longDescription && (
         <section className="section-padding bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950">
           <div className="section-container max-w-4xl">
@@ -246,11 +249,10 @@ export function ServiceDetailClient({ slug }: Props) {
         </section>
       )}
 
-      {/* Features + Technologies Grid */}
+      {/* Features & Technologies */}
       <section className="section-padding">
         <div className="section-container">
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Features Column */}
             {service.features && service.features.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
@@ -292,7 +294,6 @@ export function ServiceDetailClient({ slug }: Props) {
               </motion.div>
             )}
 
-            {/* Technologies Column */}
             {service.technologies && service.technologies.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
@@ -332,7 +333,7 @@ export function ServiceDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* Stats / Trust Indicators */}
+      {/* Trust Indicators */}
       <section className="py-16 bg-gradient-to-r from-brand-50 to-violet-50 dark:from-brand-950/20 dark:to-violet-950/20">
         <div className="section-container">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
