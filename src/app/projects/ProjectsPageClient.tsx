@@ -1,22 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRight, ChevronLeft, ChevronRight, AlertCircle, X, ExternalLink,
-  Calendar, Package, Layers, Link as LinkIcon, Image as ImageIcon
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  X,
+  ExternalLink,
+  Calendar,
+  Package,
+  Layers,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  TrendingUp,
+  ShoppingBag,
+  Users,
+  Smartphone,
+  CheckCircle,
 } from 'lucide-react';
 import { useProjects } from '@/hooks/useApi';
 import { getThumbUrl, getOptimizedUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
+import { projectCaseStudyMap } from '@/lib/projectMetadata';
 import type { ProjectResponse } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
 
-// Skeleton loader for cards
+// ─── Skeleton ──────────────────────────────────────────────────────────────
 function ProjectCardSkeleton() {
   return (
     <div className="rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col h-full animate-pulse">
@@ -25,7 +40,10 @@ function ProjectCardSkeleton() {
         <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3" />
         <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
         <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
-        <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-2/3" />
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded" />
+          <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        </div>
         <div className="flex gap-2 pt-2">
           <div className="h-6 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
           <div className="h-6 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
@@ -35,7 +53,7 @@ function ProjectCardSkeleton() {
   );
 }
 
-// Project Card (clickable)
+// ─── Premium Project Card ──────────────────────────────────────────────
 function ProjectCard({
   project,
   index,
@@ -45,55 +63,112 @@ function ProjectCard({
   index: number;
   onClick: () => void;
 }) {
+  const caseStudy = projectCaseStudyMap[project.slug];
+  const stats = caseStudy?.stats || {};
+  const industry = caseStudy?.industry || 'Technology';
+
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: (index % 9) * 0.05 }}
-      whileHover={{ y: -4 }}
+      transition={{ delay: (index % 9) * 0.06, duration: 0.5, ease: 'easeOut' }}
+      whileHover={{ y: -6 }}
       onClick={onClick}
-      className="group cursor-pointer rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col h-full transition-all duration-300 hover:shadow-xl"
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:border-brand-400/50"
     >
-      <div className="relative overflow-hidden aspect-video bg-gradient-to-br from-brand-500/10 to-purple-500/10">
+      {/* Thumbnail Banner */}
+      <div className="relative overflow-hidden aspect-video bg-gradient-to-br from-brand-500/20 to-purple-500/20">
         {project.thumbImage ? (
           <Image
             src={getThumbUrl(project.thumbImage)}
             alt={project.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-105 transition-transform duration-700"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-brand-900/30 to-purple-900/20" />
         )}
-        {project.featured && (
-          <span className="absolute top-3 left-3 text-xs font-semibold px-2 py-1 rounded-full bg-white/90 dark:bg-zinc-900/90 text-brand-600 shadow-sm">
-            Featured
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+          {project.featured && (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-400/90 text-amber-950 backdrop-blur-sm">
+              Featured
+            </span>
+          )}
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
+            {industry}
           </span>
-        )}
-        {project.projectDeliverableType && (
-          <span className="absolute top-3 right-3 text-xs px-2 py-1 rounded-full bg-black/60 text-white backdrop-blur-sm font-medium">
-            {project.projectDeliverableType.replace('_', ' ')}
-          </span>
-        )}
+          {project.projectDeliverableType && (
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/20 text-white backdrop-blur-sm">
+              {project.projectDeliverableType.replace(/_/g, ' ')}
+            </span>
+          )}
+        </div>
+
+        {/* Stats row – shown on hover or always? We'll show on hover for minimalism, or always. Let's show always. */}
+        <div className="absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-2 text-white/90">
+          {stats.products && (
+            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
+              <ShoppingBag className="w-3 h-3" />
+              <span>{stats.products} products</span>
+            </div>
+          )}
+          {stats.orders && (
+            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
+              <TrendingUp className="w-3 h-3" />
+              <span>{stats.orders} orders</span>
+            </div>
+          )}
+          {stats.users && (
+            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
+              <Users className="w-3 h-3" />
+              <span>{stats.users} users</span>
+            </div>
+          )}
+          {stats.platform && (
+            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
+              <Smartphone className="w-3 h-3" />
+              <span>{stats.platform}</span>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Content */}
       <div className="p-5 flex flex-col flex-1">
-        {project.projectBundle && (
-          <span className="text-xs font-medium text-brand-600 dark:text-brand-400 mb-1">
-            {project.projectBundle.projectBundleName}
-          </span>
-        )}
+        <div className="flex items-start justify-between gap-2 mb-1">
+          {project.projectBundle && (
+            <span className="text-xs font-medium text-brand-600 dark:text-brand-400">
+              {project.projectBundle.projectBundleName}
+            </span>
+          )}
+          {project.createdAt && (
+            <span className="text-xs text-zinc-400 whitespace-nowrap">
+              {formatDate(project.createdAt)}
+            </span>
+          )}
+        </div>
+
         <h3 className="font-display font-bold text-xl text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-brand-600 transition-colors">
           {project.title}
         </h3>
+
         <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed flex-1 mb-4 line-clamp-2">
           {project.shortDescription}
         </p>
+
+        {/* Technology stack pills */}
         {project.technologies?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {project.technologies.slice(0, 4).map((t) => (
-              <span key={t.id} className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <span
+                key={t.id}
+                className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+              >
                 {t.technology.name}
               </span>
             ))}
@@ -104,15 +179,17 @@ function ProjectCard({
             )}
           </div>
         )}
+
+        {/* CTA */}
         <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 group-hover:gap-3 transition-all">
-          View Project <ArrowRight className="w-3.5 h-3.5" />
+          View Case Study <ArrowRight className="w-3.5 h-3.5" />
         </div>
       </div>
     </motion.article>
   );
 }
 
-// Modal Component for full project details
+// ─── Modal (Quick Preview) ─────────────────────────────────────────────
 function ProjectModal({
   project,
   onClose,
@@ -120,6 +197,8 @@ function ProjectModal({
   project: ProjectResponse;
   onClose: () => void;
 }) {
+  const caseStudy = projectCaseStudyMap[project.slug];
+  const stats = caseStudy?.stats || {};
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const bannerImages = project.bannerImages?.sort((a, b) => a.displayOrder - b.displayOrder) || [];
 
@@ -149,21 +228,19 @@ function ProjectModal({
           className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors"
-            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="p-6 md:p-8">
-            {/* Header: Title, type, bundle */}
+            {/* Header */}
             <div className="mb-6">
-              {project.projectBundle && (
+              {caseStudy?.industry && (
                 <span className="inline-block text-xs font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/30 px-2 py-1 rounded mb-2">
-                  {project.projectBundle.projectBundleName}
+                  {caseStudy.industry}
                 </span>
               )}
               <h2 className="font-display text-3xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -176,25 +253,44 @@ function ProjectModal({
               )}
             </div>
 
-            {/* Short description */}
-            <p className="text-zinc-600 dark:text-zinc-300 mb-6 leading-relaxed">
-              {project.shortDescription}
-            </p>
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {stats.products && (
+                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+                  <p className="text-2xl font-bold text-brand-600">{stats.products}</p>
+                  <p className="text-xs text-zinc-500">Products</p>
+                </div>
+              )}
+              {stats.orders && (
+                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+                  <p className="text-2xl font-bold text-brand-600">{stats.orders}</p>
+                  <p className="text-xs text-zinc-500">Orders</p>
+                </div>
+              )}
+              {stats.users && (
+                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+                  <p className="text-2xl font-bold text-brand-600">{stats.users}</p>
+                  <p className="text-xs text-zinc-500">Users</p>
+                </div>
+              )}
+              {stats.uptime && (
+                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
+                  <p className="text-2xl font-bold text-brand-600">{stats.uptime}</p>
+                  <p className="text-xs text-zinc-500">Uptime</p>
+                </div>
+              )}
+            </div>
 
-            {/* Banner Images Carousel */}
+            {/* Gallery Carousel */}
             {bannerImages.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-brand-500" />
-                  Project Gallery
-                </h3>
+              <div className="mb-6">
                 <div className="relative rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   <div className="aspect-video relative">
                     {bannerImages[currentImageIndex]?.media?.optimizedKey && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={getOptimizedUrl(bannerImages[currentImageIndex].media)}
-                        alt={`${project.title} screenshot ${currentImageIndex + 1}`}
+                        alt={`${project.title} screenshot`}
                         className="w-full h-full object-contain"
                       />
                     )}
@@ -203,56 +299,63 @@ function ProjectModal({
                     <>
                       <button
                         onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                        {bannerImages.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setCurrentImageIndex(idx)}
-                            className={cn(
-                              'w-2 h-2 rounded-full transition-all',
-                              idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'
-                            )}
-                          />
-                        ))}
-                      </div>
                     </>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Full Description */}
-            {project.fullDescription && (
-              <div className="mb-8">
-                <h3 className="font-display text-lg font-semibold mb-3">About This Project</h3>
-                <div className="prose prose-sm prose-zinc dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {project.fullDescription.split('\n').filter(Boolean).map((para, i) => (
-                    <p key={i} className="mb-3">{para}</p>
-                  ))}
-                </div>
+            {/* Short description */}
+            <p className="text-zinc-600 dark:text-zinc-300 mb-4 leading-relaxed">
+              {project.shortDescription}
+            </p>
+
+            {/* Problem & Solution (if available) */}
+            {caseStudy?.problem && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">The Challenge</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">{caseStudy.problem}</p>
+              </div>
+            )}
+            {caseStudy?.solution && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Our Solution</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">{caseStudy.solution}</p>
               </div>
             )}
 
-            {/* Technologies */}
+            {/* Results */}
+            {caseStudy?.results && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Key Results</h4>
+                <ul className="list-disc list-inside text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
+                  {caseStudy.results.map((r: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, i: Key | null | undefined) => (
+                    <li key={i}>{r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Tech stack */}
             {project.technologies?.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-brand-500" />
-                  Technologies Used
-                </h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-4">
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Technologies</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
                   {project.technologies.map((t) => (
-                    <span key={t.id} className="text-xs px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    <span
+                      key={t.id}
+                      className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                    >
                       {t.technology.name}
                     </span>
                   ))}
@@ -260,46 +363,16 @@ function ProjectModal({
               </div>
             )}
 
-            {/* External Links */}
-            {project.externalLinks?.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5 text-brand-500" />
-                  Links
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {project.externalLinks.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:border-brand-500/40 hover:text-brand-600 transition"
-                    >
-                      {link.name || 'Visit'} <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Meta Info */}
-            <div className="text-xs text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-4 flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                {project.createdAt && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> {formatDate(project.createdAt)}
-                  </span>
-                )}
-                <span>Project ID: {project.id}</span>
-              </div>
+            {/* Footer with link to full case study */}
+            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 flex justify-between items-center">
               <Link
                 href={`/projects/${project.slug}`}
-                className="text-brand-600 hover:underline text-xs flex items-center gap-1"
+                className="text-brand-600 hover:underline text-sm flex items-center gap-1"
                 onClick={(e) => e.stopPropagation()}
               >
-                View dedicated page <ArrowRight className="w-3 h-3" />
+                Read full case study <ArrowRight className="w-3.5 h-3.5" />
               </Link>
+              <span className="text-xs text-zinc-400">Project ID: {project.id}</span>
             </div>
           </div>
         </motion.div>
@@ -308,6 +381,7 @@ function ProjectModal({
   );
 }
 
+// ─── Main Component ──────────────────────────────────────────────────────
 export function ProjectsPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -369,7 +443,7 @@ export function ProjectsPageClient() {
               animate={{ opacity: 1, y: 0 }}
               className="eyebrow"
             >
-              Our Portfolio
+              Case Studies
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
@@ -377,7 +451,7 @@ export function ProjectsPageClient() {
               transition={{ delay: 0.1 }}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mb-5"
             >
-              Projects That <span className="gradient-text">Ship and Scale</span>
+              Ecommerce Solutions That <span className="gradient-text">Ship and Scale</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -385,7 +459,7 @@ export function ProjectsPageClient() {
               transition={{ delay: 0.2 }}
               className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed"
             >
-              Every project in our portfolio is a real product serving real users. Browse our work and see what we can build for you.
+              Every project is a complete ecosystem built for real business growth. Browse our case studies to see how we transform ideas into thriving ecommerce platforms.
             </motion.p>
           </div>
         </div>
@@ -403,9 +477,11 @@ export function ProjectsPageClient() {
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {Array(9).fill(0).map((_, i) => (
-                  <ProjectCardSkeleton key={i} />
-                ))}
+                {Array(9)
+                  .fill(0)
+                  .map((_, i) => (
+                    <ProjectCardSkeleton key={i} />
+                  ))}
               </motion.div>
             ) : (
               <motion.div
@@ -443,7 +519,6 @@ export function ProjectsPageClient() {
                   'btn-secondary p-2.5 rounded-full transition-all',
                   isFirst && 'opacity-40 cursor-not-allowed'
                 )}
-                aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -469,8 +544,6 @@ export function ProjectsPageClient() {
                           ? 'bg-brand-600 text-white shadow-md'
                           : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
                       )}
-                      aria-label={`Go to page ${pageNum + 1}`}
-                      aria-current={pageNum === currentPage ? 'page' : undefined}
                     >
                       {pageNum + 1}
                     </button>
@@ -484,7 +557,6 @@ export function ProjectsPageClient() {
                   'btn-secondary p-2.5 rounded-full transition-all',
                   isLast && 'opacity-40 cursor-not-allowed'
                 )}
-                aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

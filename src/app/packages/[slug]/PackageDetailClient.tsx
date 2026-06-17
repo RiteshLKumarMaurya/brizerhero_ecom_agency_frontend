@@ -1,15 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, ArrowRight, Zap, Clock, Package, Users, Settings, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Check, ArrowRight, Zap, Clock, Package, Users, Settings, Shield, Star, Globe } from 'lucide-react';
 import { usePackage } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatPrice } from '@/lib/utils';
 import { ContactCta } from '@/components/sections/ContactCta';
+import { packageMetadataMap } from '@/lib/packageMetadata';
 
 interface Props { slug: string; }
 
+// ─── Static benefits (can be moved to metadata later) ───────────────────
 const benefits = [
   { icon: Clock, text: '30‑day delivery (typical)' },
   { icon: Users, text: 'Dedicated project manager' },
@@ -19,7 +22,9 @@ const benefits = [
 
 export function PackageDetailClient({ slug }: Props) {
   const { data: pkg, isLoading, error } = usePackage(slug);
+  const metadata = pkg ? packageMetadataMap[pkg.slug] : null;
 
+  // ── Loading ──
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32">
@@ -33,6 +38,7 @@ export function PackageDetailClient({ slug }: Props) {
     );
   }
 
+  // ── Error ──
   if (error || !pkg) {
     return (
       <div className="min-h-screen pt-32 flex items-center justify-center px-4">
@@ -47,25 +53,49 @@ export function PackageDetailClient({ slug }: Props) {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      {/* ─── Hero Section with Thumbnail ────────────────────────────────── */}
+      <section className="relative pt-32 pb-16 bg-white dark:bg-zinc-900 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
         <div className="section-container">
           <Link
             href="/packages"
-            className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-brand-500 mb-8 transition-colors group"
+            className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-brand-500 mb-6 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to Packages
           </Link>
 
-          <div className="grid lg:grid-cols-3 gap-12 items-start">
-            {/* Left content */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* ─── Left: Thumbnail + Content ────────────────────────────── */}
+            <div>
+              {/* Thumbnail Banner */}
+              {metadata?.thumbnail ? (
+                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl mb-6 bg-gradient-to-br from-brand-600 to-purple-600">
+                  <Image
+                    src={metadata.thumbnail}
+                    alt={pkg.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                </div>
+              ) : (
+                <div className="aspect-[16/9] rounded-2xl bg-gradient-to-br from-brand-600/20 to-purple-600/20 flex items-center justify-center mb-6">
+                  <Zap className="w-16 h-16 text-brand-400/50" />
+                </div>
+              )}
+
+              {/* Title & Price */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center flex-shrink-0">
                   {pkg.iconImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={getOptimizedUrl(pkg.iconImage)} alt={pkg.name} className="w-8 h-8 object-contain" />
+                    <Image
+                      src={getOptimizedUrl(pkg.iconImage)}
+                      alt={pkg.name}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 object-contain"
+                    />
                   ) : (
                     <Zap className="w-7 h-7 text-brand-600 dark:text-brand-400" />
                   )}
@@ -77,7 +107,7 @@ export function PackageDetailClient({ slug }: Props) {
                 )}
               </div>
 
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
                 {pkg.name}
               </h1>
 
@@ -92,8 +122,47 @@ export function PackageDetailClient({ slug }: Props) {
                 {pkg.shortDescription}
               </p>
 
+              {/* Package Stats from metadata */}
+              {metadata?.stats && (
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <Package className="w-4 h-4 text-brand-500" />
+                    <span>{metadata.stats.products} products</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <Clock className="w-4 h-4 text-brand-500" />
+                    <span>{metadata.stats.delivery}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <Shield className="w-4 h-4 text-brand-500" />
+                    <span>{metadata.stats.support} support</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <Globe className="w-4 h-4 text-brand-500" />
+                    <span>{metadata.stats.platforms}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Package Highlights from metadata */}
+              {metadata?.highlights && metadata.highlights.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                    Package Highlights
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {metadata.highlights.slice(0, 8).map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                        <Check className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Benefits row */}
-              <div className="flex flex-wrap gap-4 mb-8">
+              <div className="flex flex-wrap gap-4">
                 {benefits.map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
                     <Icon className="w-4 h-4 text-brand-500" />
@@ -103,7 +172,7 @@ export function PackageDetailClient({ slug }: Props) {
               </div>
             </div>
 
-            {/* Sticky CTA Card */}
+            {/* ─── Right: CTA Card ───────────────────────────────────────── */}
             <div className="lg:sticky lg:top-24">
               <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl p-6 space-y-5">
                 <div className="text-center border-b border-zinc-100 dark:border-zinc-800 pb-4">
@@ -133,7 +202,7 @@ export function PackageDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* Long Description */}
+      {/* ─── Long Description ───────────────────────────────────────────── */}
       {pkg.longDescription && (
         <section className="section-padding">
           <div className="section-container max-w-3xl">
@@ -155,7 +224,7 @@ export function PackageDetailClient({ slug }: Props) {
         </section>
       )}
 
-      {/* Services Included - Enhanced Cards */}
+      {/* ─── Services Included ──────────────────────────────────────────── */}
       {pkg.services && pkg.services.length > 0 && (
         <section className="section-padding bg-zinc-50 dark:bg-zinc-950">
           <div className="section-container">
@@ -195,7 +264,7 @@ export function PackageDetailClient({ slug }: Props) {
                       </h3>
                       {mapping.serviceResponse?.shortDescription && (
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                          {mapping.serviceResponse?.shortDescription}
+                          {mapping.serviceResponse.shortDescription}
                         </p>
                       )}
                     </div>
@@ -206,7 +275,7 @@ export function PackageDetailClient({ slug }: Props) {
         </section>
       )}
 
-      {/* Final CTA */}
+      {/* ─── Final CTA ──────────────────────────────────────────────────── */}
       <section className="py-20">
         <div className="section-container text-center">
           <div className="max-w-2xl mx-auto">

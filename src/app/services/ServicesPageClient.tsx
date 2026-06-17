@@ -4,155 +4,198 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, Search, Filter, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Sparkles,
+  Search,
+  Filter,
+  X,
+  ShoppingBag,
+  LayoutDashboard,
+  Smartphone,
+  Apple,
+  Landmark,
+  Truck,
+  Users,
+  Layers,
+} from 'lucide-react';
 import { useServices } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
 import type { ServiceResponse, ServiceFeatureResponse, ServiceTechnologyResponse } from '@/types';
 
-// ============================================================
-// Skeleton Loader Component
-// ============================================================
+// ─── Icon mapping for service thumbnails ──────────────────────────────────
+const serviceIconMap: Record<string, React.ElementType> = {
+  'ecommerce-full-website': ShoppingBag,
+  'admin-panel-website': LayoutDashboard,
+  'android-ecommerce-app': Smartphone,
+  'ios-ecommerce-app': Apple,
+  'ecommerce-landing-page': Landmark,
+  'delivery-management-app': Truck,
+  'vendor-panel': Users,
+  'complete-ecommerce-ecosystem': Layers,
+};
+
+// ─── Category mapping ──────────────────────────────────────────────────────
+const getCategory = (slug: string): string => {
+  if (slug.includes('android') || slug.includes('ios')) return 'Mobile App';
+  if (slug.includes('admin') || slug.includes('vendor')) return 'Admin Panel';
+  if (slug.includes('landing')) return 'Landing Page';
+  if (slug.includes('delivery')) return 'Logistics';
+  return 'Ecommerce';
+};
+
+// ─── Skeleton Loader ──────────────────────────────────────────────────────
 function ServiceCardSkeleton() {
   return (
-    <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 animate-pulse">
-      <div className="skeleton w-16 h-16 rounded-xl mb-4" />
-      <div className="skeleton h-6 w-3/4 rounded mb-3" />
-      <div className="skeleton h-4 w-full rounded mb-2" />
-      <div className="skeleton h-4 w-5/6 rounded mb-4" />
-      <div className="flex gap-2 mb-4">
-        <div className="skeleton h-5 w-16 rounded-full" />
-        <div className="skeleton h-5 w-16 rounded-full" />
+    <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm animate-pulse">
+      <div className="aspect-[16/9] bg-zinc-200 dark:bg-zinc-800" />
+      <div className="p-5 space-y-3">
+        <div className="skeleton h-6 w-3/4 rounded" />
+        <div className="skeleton h-4 w-full rounded" />
+        <div className="skeleton h-4 w-5/6 rounded" />
+        <div className="flex gap-2 pt-2">
+          <div className="skeleton h-6 w-16 rounded-full" />
+          <div className="skeleton h-6 w-16 rounded-full" />
+        </div>
+        <div className="skeleton h-5 w-28 rounded mt-2" />
       </div>
-      <div className="skeleton h-5 w-28 rounded" />
     </div>
   );
 }
 
-// ============================================================
-// Service Card Component
-// ============================================================
+// ─── Service Card ────────────────────────────────────────────────────────
 function ServiceCard({ service, index }: { service: ServiceResponse; index: number }) {
+  const IconComponent = serviceIconMap[service.slug] || ShoppingBag;
+  const category = getCategory(service.slug);
+  const hasImage = service.iconImage; // we'll use iconImage as fallback; ideally a separate thumbnail field
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ delay: (index % 9) * 0.05, duration: 0.4, ease: 'easeOut' }}
+      transition={{ delay: (index % 9) * 0.05, duration: 0.5, ease: 'easeOut' }}
       whileHover={{ y: -8 }}
-      className="group relative rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+      className="group relative rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
     >
-      {/* Icon with gradient background */}
-      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-brand-50 to-purple-50 dark:from-brand-950/40 dark:to-purple-950/40 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-        {service.iconImage ? (
+      {/* ─── Thumbnail Banner (16:9) ─────────────────────────────────── */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-brand-600 to-purple-600">
+        {/* If an image exists, show it; otherwise a gradient + icon */}
+        {hasImage ? (
           <Image
             src={getOptimizedUrl(service.iconImage)}
             alt={service.name}
-            width={32}
-            height={32}
-            className="w-8 h-8 object-contain"
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-brand-200 dark:bg-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-lg">
-            {service.name.charAt(0)}
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-600/80 to-purple-600/80">
+            <IconComponent className="w-20 h-20 text-white/70" strokeWidth={1.5} />
           </div>
+        )}
+
+        {/* Category Badge */}
+        <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs font-semibold tracking-wide border border-white/10">
+          <Sparkles className="w-3 h-3" />
+          {category}
+        </span>
+
+        {/* Featured Badge */}
+        {service.featured && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400/90 text-amber-950 text-xs font-bold tracking-wide backdrop-blur-sm">
+            <Sparkles className="w-3 h-3" />
+            Featured
+          </span>
+        )}
+
+        {/* Gradient overlay for text readability (if image is present) */}
+        {hasImage && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         )}
       </div>
 
-      {/* Featured badge */}
-      {service.featured && (
-        <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
-          <Sparkles className="w-3 h-3" />
-          Featured
-        </span>
-      )}
+      {/* ─── Content ────────────────────────────────────────────────────── */}
+      <div className="flex-1 p-5 flex flex-col">
+        <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-1.5 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+          {service.name}
+        </h3>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2 flex-1">
+          {service.shortDescription}
+        </p>
 
-      {/* Title & Description */}
-      <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
-        {service.name}
-      </h3>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-2 flex-1">
-        {service.shortDescription}
-      </p>
+        {/* Key Features */}
+        {service.features && service.features.length > 0 && (
+          <div className="mt-3">
+            <ul className="space-y-1">
+              {service.features.slice(0, 2).map((feature: ServiceFeatureResponse) => (
+                <li key={feature.id} className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />
+                  <span className="line-clamp-1">{feature.feature?.name || 'Feature'}</span>
+                </li>
+              ))}
+              {service.features.length > 2 && (
+                <li className="text-xs text-brand-500">+{service.features.length - 2} more</li>
+              )}
+            </ul>
+          </div>
+        )}
 
-      {/* Features (key highlights) */}
-      {service.features && service.features.length > 0 && (
-        <div className="mb-4">
-          <ul className="space-y-1.5">
-            {service.features.slice(0, 3).map((feature: ServiceFeatureResponse) => (
-              <li key={feature.id} className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-1.5 flex-shrink-0" />
-                <span className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-1">
-                  {feature.feature?.name || 'Feature'}
-                </span>
-              </li>
+        {/* Technologies */}
+        {service.technologies && service.technologies.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {service.technologies.slice(0, 3).map((tech: ServiceTechnologyResponse) => (
+              <span
+                key={tech.id}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium"
+              >
+                {tech.technology?.name || 'Tech'}
+              </span>
             ))}
-          </ul>
-          {service.features.length > 3 && (
-            <p className="text-xs text-brand-500 mt-1 ml-2">+{service.features.length - 3} more</p>
-          )}
-        </div>
-      )}
+            {service.technologies.length > 3 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                +{service.technologies.length - 3}
+              </span>
+            )}
+          </div>
+        )}
 
-      {/* Tech stack pills */}
-      {service.technologies && service.technologies.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-5">
-          {service.technologies.slice(0, 3).map((tech: ServiceTechnologyResponse) => (
-            <span
-              key={tech.id}
-              className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-            >
-              {tech.technology?.name || 'Tech'}
-            </span>
-          ))}
-          {service.technologies.length > 3 && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
-              +{service.technologies.length - 3}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* CTA Link */}
-      <Link
-        href={`/services/${service.slug}`}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 mt-auto group-hover:gap-3 transition-all duration-200"
-      >
-        Explore {service.name}
-        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-      </Link>
+        {/* CTA */}
+        <Link
+          href={`/services/${service.slug}`}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 mt-4 group-hover:gap-3 transition-all duration-200"
+        >
+          Explore Service
+          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
     </motion.div>
   );
 }
 
-// ============================================================
-// Main Page Component
-// ============================================================
+// ─── Main Page ──────────────────────────────────────────────────────────
 export function ServicesPageClient() {
   const { data: services, isLoading, error } = useServices();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 
-  // Filter and sort services
   const filteredServices = useMemo(() => {
     if (!services) return [];
     let filtered = [...services];
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
-          s.name.toLowerCase().includes(query) ||
-          s.shortDescription.toLowerCase().includes(query)
+          s.name.toLowerCase().includes(q) ||
+          s.shortDescription.toLowerCase().includes(q)
       );
     }
     if (showFeaturedOnly) {
       filtered = filtered.filter((s) => s.featured);
     }
-    // Sort by displayOrder (if exists) or name
     return filtered.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }, [services, searchQuery, showFeaturedOnly]);
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-[70vh] pt-32 flex items-center justify-center px-4">
@@ -174,11 +217,10 @@ export function ServicesPageClient() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-16 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
-        {/* Background pattern */}
+      {/* Hero */}
+      <section className="relative pt-32 pb-16 overflow-hidden bg-zinc-50 dark:bg-zinc-950">
         <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/5 to-transparent pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
 
         <div className="section-container text-center max-w-3xl mx-auto relative">
           <motion.span
@@ -210,17 +252,17 @@ export function ServicesPageClient() {
         </div>
       </section>
 
-      {/* Stat Badge */}
+      {/* Stats Badge */}
       {!isLoading && services && services.length > 0 && (
         <div className="flex justify-center -mt-4 mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-sm font-medium shadow-sm backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-sm font-medium shadow-sm backdrop-blur-sm border border-brand-200/50 dark:border-brand-800/50">
             <Sparkles className="w-4 h-4" />
             {services.length} Expert Services • 5+ Successful Projects
           </div>
         </div>
       )}
 
-      {/* Search & Filter Bar */}
+      {/* Search & Filter */}
       <div className="section-container mb-8">
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-3 items-center">
           <div className="relative flex-1 w-full">
@@ -258,7 +300,7 @@ export function ServicesPageClient() {
         </div>
       </div>
 
-      {/* Services Grid */}
+      {/* Grid */}
       <section className="section-padding pt-0">
         <div className="section-container">
           <AnimatePresence mode="wait">
@@ -270,9 +312,11 @@ export function ServicesPageClient() {
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {Array(6).fill(0).map((_, i) => (
-                  <ServiceCardSkeleton key={i} />
-                ))}
+                {Array(6)
+                  .fill(0)
+                  .map((_, i) => (
+                    <ServiceCardSkeleton key={i} />
+                  ))}
               </motion.div>
             ) : filteredServices.length === 0 ? (
               <motion.div

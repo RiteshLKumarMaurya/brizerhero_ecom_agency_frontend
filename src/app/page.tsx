@@ -1,25 +1,25 @@
 import type { Metadata } from 'next';
 import { HeroSection } from '@/components/sections/HeroSection';
-import { StatsSection } from '@/components/sections/StatsSection';
-import { FeaturedServices } from '@/components/sections/FeaturedServices';
-import { FeaturedProjects } from '@/components/sections/FeaturedProjects';
-import { FeaturedPackages } from '@/components/sections/FeaturedPackages';
-import { TechnologiesSection } from '@/components/sections/TechnologiesSection';
+import { BannersSection } from '@/components/sections/BannersSection';
+import { EcosystemVisual } from '@/components/sections/EcosystemVisual';
+import { FeaturesPreview } from '@/components/sections/FeaturesPreview';
+import { ServicesSection } from '@/components/sections/ServicesSection';
+import { ProjectsShowcase } from '@/components/sections/ProjectsShowcase';
+import { PackagesSection } from '@/components/sections/PackagesSection';
 import { WhyChooseUs } from '@/components/sections/WhyChooseUs';
+import { ClientResults } from '@/components/sections/ClientResults';
 import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { ProcessSection } from '@/components/sections/ProcessSection';
-import { FaqSection } from '@/components/sections/FaqSection';
+import { FinalCta } from '@/components/sections/FinalCta';
 import { ContactCta } from '@/components/sections/ContactCta';
-import { BannersSection } from '@/components/sections/BannersSection';
-import { EcomShowcase } from '@/components/sections/EcomShowcase';
 
 export const metadata: Metadata = {
-  title: 'BrizerHero — Complete E-commerce Software Solutions',
+  title: 'BrizerHero — Complete Ecommerce Ecosystem Solutions',
   description:
-    'BrizerHero builds complete e-commerce software solutions — websites, Android apps, iOS apps, admin panels, delivery apps, and backend APIs. Get your entire digital commerce ecosystem built by experts.',
+    'BrizerHero builds complete ecommerce ecosystems — websites, mobile apps, admin panels, delivery apps, and backend APIs. Launch your digital commerce business today.',
   openGraph: {
-    title: 'BrizerHero — Complete E-commerce Software Solutions',
-    description: 'We build complete e-commerce ecosystems for store owners, D2C brands, wholesalers, and manufacturers.',
+    title: 'BrizerHero — Complete Ecommerce Ecosystem Solutions',
+    description: 'We build complete ecommerce ecosystems for store owners, D2C brands, wholesalers, and manufacturers.',
     type: 'website',
   },
 };
@@ -29,17 +29,15 @@ export default function HomePage() {
     <>
       <HeroSection />
       <BannersSection />
-      <StatsSection />
-      <FeaturedServices />
-      <EcomShowcase />
-      <FeaturedProjects />
-      <FeaturedPackages />
-      <TechnologiesSection />
+      <ClientResults />  
+      <PackagesSection />
+      <ProjectsShowcase />
+      <ServicesSection />
+      <FeaturesPreview />
       <WhyChooseUs />
       <TestimonialsSection />
       <ProcessSection />
-      <FaqSection />
-      <ContactCta />
+      <FinalCta />
     </>
   );
 }

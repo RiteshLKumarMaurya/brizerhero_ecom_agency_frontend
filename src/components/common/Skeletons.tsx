@@ -63,3 +63,19 @@ export function TestimonialCardSkeleton() {
 export function TechBadgeSkeleton() {
   return <div className="skeleton h-10 w-24 rounded-xl" />;
 }
+
+export function FeatureCardSkeleton() {
+  return (
+    <div className="card-base animate-pulse">
+      <div className="skeleton w-full h-40 rounded-xl mb-4" />
+
+      <div className="skeleton h-5 w-2/3 rounded mb-3" />
+
+      <div className="skeleton h-3 w-full rounded mb-2" />
+      <div className="skeleton h-3 w-5/6 rounded mb-2" />
+      <div className="skeleton h-3 w-4/6 rounded mb-4" />
+
+      <div className="skeleton h-8 w-24 rounded-full" />
+    </div>
+  );
+}

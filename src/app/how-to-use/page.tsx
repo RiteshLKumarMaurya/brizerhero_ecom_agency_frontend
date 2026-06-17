@@ -44,23 +44,7 @@ export default function HowToUsePage() {
           </section>
 
           {/* For Registered Clients (with account) */}
-          <section className="card-base p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-brand-50">
-                <Shield className="w-5 h-5 text-brand-600" />
-              </div>
-              <h2 className="font-display text-xl font-bold">For Registered Clients</h2>
-            </div>
-            <div className="space-y-4 text-zinc-600 dark:text-zinc-300">
-              <p>If you have an account with us, you can:</p>
-              <ul className="list-disc pl-5 space-y-2">
-                <li><strong>Log in</strong> via the "Sign in" button in the top right corner.</li>
-                <li><strong>Track your projects:</strong> After logging in, you'll see your project status and milestones.</li>
-                <li><strong>Submit support requests:</strong> Use the contact form or your dedicated account manager.</li>
-                <li><strong>View invoices:</strong> Manage payments and download receipts from your profile.</li>
-              </ul>
-            </div>
-          </section>
+      
 
           {/* For Admin Panel Users */}
           <section className="card-base p-6">
@@ -114,14 +98,7 @@ export default function HowToUsePage() {
                 <p className="font-semibold">How do I change my password?</p>
                 <p className="text-sm">Log in → go to Dashboard → Settings → Change Password.</p>
               </div>
-              <div>
-                <p className="font-semibold">Can I upload multiple banner images at once?</p>
-                <p className="text-sm">Yes, in the admin panel you can upload up to 10 banner images per testimonial or project.</p>
-              </div>
-              <div>
-                <p className="font-semibold">How do I delete a project/testimonial?</p>
-                <p className="text-sm">In the dashboard, find the item and click the trash icon. Confirm deletion – it’s permanent!</p>
-              </div>
+            
               <div>
                 <p className="font-semibold">What if I forget my login?</p>
                 <p className="text-sm">Use the "Forgot Password?" link on the login page or contact support.</p>

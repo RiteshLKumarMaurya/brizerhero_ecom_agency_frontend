@@ -3,9 +3,27 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { 
-  ArrowLeft, ExternalLink, ArrowRight, AlertCircle, 
-  Calendar, Award, Eye, Copy, Check, Facebook, Twitter, Linkedin
+import {
+  ArrowLeft,
+  ExternalLink,
+  ArrowRight,
+  AlertCircle,
+  Calendar,
+  Award,
+  Eye,
+  Copy,
+  Check,
+  Facebook,
+  Twitter,
+  Linkedin,
+  TrendingUp,
+  ShoppingBag,
+  Users,
+  Smartphone,
+  CheckCircle,
+  Clock,
+  Layers,
+  Shield,
 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
@@ -15,25 +33,24 @@ import { useProject } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatDate } from '@/lib/utils';
 import { ContactCta } from '@/components/sections/ContactCta';
-
-import {ProjectBannerImageResponse} from '@/types';
+import { projectCaseStudyMap } from '@/lib/projectMetadata';
+import type { ProjectBannerImageResponse } from '@/types';
 
 interface Props {
   slug: string;
 }
 
-// Animation variants
+// ─── Animations ──────────────────────────────────────────────────────────
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
 };
-
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 }
-  }
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
 };
 
 export function ProjectDetailClient({ slug }: Props) {
@@ -42,18 +59,16 @@ export function ProjectDetailClient({ slug }: Props) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const mainContentRef = useRef<HTMLElement>(null);
-  
-  // Scroll progress for reading bar
+
   const { scrollYProgress } = useScroll({
     target: mainContentRef,
-    offset: ['start start', 'end start']
+    offset: ['start start', 'end start'],
   });
   const width = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
-  // Share functionality
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareTitle = project?.title || 'Check out this project';
-  
+
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
@@ -64,16 +79,16 @@ export function ProjectDetailClient({ slug }: Props) {
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
-      linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareTitle)}`
+      linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareTitle)}`,
     };
     window.open(urls[platform], '_blank', 'width=600,height=400');
   };
 
-  // Prepare lightbox images – correctly access media inside ProjectBannerImageResponse
-  const lightboxImages = project?.bannerImages?.map((img: ProjectBannerImageResponse) => ({ 
-    src: getOptimizedUrl(img.media), 
-    alt: project.title 
-  })) || [];
+  const lightboxImages =
+    project?.bannerImages?.map((img: ProjectBannerImageResponse) => ({
+      src: getOptimizedUrl(img.media),
+      alt: project.title,
+    })) || [];
 
   if (isLoading) {
     return (
@@ -101,7 +116,7 @@ export function ProjectDetailClient({ slug }: Props) {
   if (error || !project) {
     return (
       <div className="min-h-[70vh] pt-32 flex items-center justify-center px-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center max-w-md"
@@ -126,17 +141,20 @@ export function ProjectDetailClient({ slug }: Props) {
     );
   }
 
+  const caseStudy = projectCaseStudyMap[project.slug];
+  const stats = caseStudy?.stats || {};
+
   return (
     <>
       {/* Reading Progress Bar */}
-      <motion.div 
-        className="fixed top-0 left-0 right-0 h-1 bg-brand-500 z-50 origin-left"
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-purple-500 z-50 origin-left"
         style={{ scaleX: width }}
       />
 
       <main ref={mainContentRef}>
-        {/* Hero Section */}
-        <section className="relative pt-32 pb-20 overflow-hidden bg-gradient-to-b from-zinc-50 via-white to-white dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-900">
+        {/* ─── Hero Section ────────────────────────────────────────────── */}
+        <section className="relative pt-32 pb-16 overflow-hidden bg-gradient-to-b from-zinc-50 via-white to-white dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-900">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-40 -left-20 w-72 h-72 bg-brand-500/10 rounded-full blur-[80px]" />
             <div className="absolute bottom-20 -right-20 w-96 h-96 bg-violet-500/10 rounded-full blur-[100px]" />
@@ -152,18 +170,13 @@ export function ProjectDetailClient({ slug }: Props) {
                 href="/projects"
                 className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-brand-500 mb-8 transition-all group"
               >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> 
-                Back to all projects
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                Back to all case studies
               </Link>
             </motion.div>
 
-            <motion.div 
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="grid lg:grid-cols-3 gap-12 items-start"
-            >
-              {/* Left content */}
+            <div className="grid lg:grid-cols-3 gap-12 items-start">
+              {/* Left: Title, description, stats */}
               <div className="lg:col-span-2 space-y-6">
                 {project.projectBundle && (
                   <motion.div variants={fadeInUp}>
@@ -173,20 +186,57 @@ export function ProjectDetailClient({ slug }: Props) {
                     </span>
                   </motion.div>
                 )}
-                
-                <motion.h1 
+
+                <motion.h1
                   variants={fadeInUp}
                   className="font-display text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent"
                 >
                   {project.title}
                 </motion.h1>
-                
-                <motion.p 
+
+                {caseStudy?.industry && (
+                  <motion.p variants={fadeInUp} className="text-sm text-brand-600 dark:text-brand-400 font-medium">
+                    {caseStudy.industry} • {project.projectDeliverableType?.replace(/_/g, ' ') || 'Project'}
+                  </motion.p>
+                )}
+
+                <motion.p
                   variants={fadeInUp}
                   className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-2xl"
                 >
                   {project.shortDescription}
                 </motion.p>
+
+                {/* Stats Row */}
+                <motion.div
+                  variants={fadeInUp}
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4"
+                >
+                  {stats.products && (
+                    <div className="text-center p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                      <p className="text-2xl font-bold text-brand-600">{stats.products}</p>
+                      <p className="text-xs text-zinc-500">Products</p>
+                    </div>
+                  )}
+                  {stats.users && (
+                    <div className="text-center p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                      <p className="text-2xl font-bold text-brand-600">{stats.users}</p>
+                      <p className="text-xs text-zinc-500">Users</p>
+                    </div>
+                  )}
+                  {stats.uptime && (
+                    <div className="text-center p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                      <p className="text-2xl font-bold text-brand-600">{stats.uptime}</p>
+                      <p className="text-xs text-zinc-500">Uptime</p>
+                    </div>
+                  )}
+                  {stats.platform && (
+                    <div className="text-center p-3 rounded-xl bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                      <p className="text-2xl font-bold text-brand-600">{stats.platform}</p>
+                      <p className="text-xs text-zinc-500">Platforms</p>
+                    </div>
+                  )}
+                </motion.div>
 
                 {project.externalLinks && project.externalLinks.length > 0 && (
                   <motion.div variants={fadeInUp} className="flex flex-wrap gap-3 pt-2">
@@ -196,7 +246,7 @@ export function ProjectDetailClient({ slug }: Props) {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:border-brand-400 hover:text-brand-600 dark:hover:text-brand-400 transition-all duration-200 group"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:border-brand-400 hover:text-brand-600 dark:hover:text-brand-400 transition-all group"
                       >
                         {link.name}
                         <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -206,8 +256,8 @@ export function ProjectDetailClient({ slug }: Props) {
                 )}
               </div>
 
-              {/* Meta Card */}
-              <motion.div 
+              {/* Right: Meta Card */}
+              <motion.div
                 variants={fadeInUp}
                 className="lg:sticky lg:top-28"
               >
@@ -225,23 +275,19 @@ export function ProjectDetailClient({ slug }: Props) {
                       </div>
                     </div>
                   )}
-                  
-                  {project.technologies && project.technologies.length > 0 && (
-                    <div>
-                      <p className="text-xs text-zinc-400 mb-2 uppercase tracking-wider">Technologies</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.technologies.map((t) => (
-                          <span 
-                            key={t.id} 
-                            className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono"
-                          >
-                            {t.technology.name}
-                          </span>
-                        ))}
+
+                  {caseStudy?.timeline && (
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                        <Clock className="w-4 h-4 text-zinc-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-zinc-400 uppercase tracking-wider">Timeline</p>
+                        <p className="text-sm text-zinc-700 dark:text-zinc-300">{caseStudy.timeline}</p>
                       </div>
                     </div>
                   )}
-                  
+
                   {project.createdAt && (
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
@@ -253,18 +299,18 @@ export function ProjectDetailClient({ slug }: Props) {
                       </div>
                     </div>
                   )}
-                  
+
                   <Link href="/contact" className="btn-primary w-full justify-center gap-2 group">
-                    Start a similar project 
+                    Start a similar project
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* Gallery Section with Lightbox */}
+        {/* ─── Gallery Section ──────────────────────────────────────────── */}
         {project.bannerImages && project.bannerImages.length > 0 && (
           <section className="py-12 bg-white dark:bg-zinc-950">
             <div className="section-container">
@@ -308,87 +354,171 @@ export function ProjectDetailClient({ slug }: Props) {
           </section>
         )}
 
-        {/* Thumbnail fallback */}
-        {(!project.bannerImages || project.bannerImages.length === 0) && project.thumbImage && (
-          <section className="py-12">
-            <div className="section-container">
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src={getOptimizedUrl(project.thumbImage)}
-                  alt={project.title}
-                  fill
-                  className="object-cover"
-                />
+        {/* ─── Case Study Details ────────────────────────────────────── */}
+        <section className="py-16 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950">
+          <div className="section-container max-w-4xl">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
+              <h2 className="font-display text-3xl md:text-4xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
+                Case Study
+              </h2>
+              {/* Share buttons */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 hidden sm:inline">Share:</span>
+                <button
+                  onClick={() => handleShare('facebook')}
+                  className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#1877f2] hover:text-white transition-all"
+                >
+                  <Facebook className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleShare('twitter')}
+                  className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#1da1f2] hover:text-white transition-all"
+                >
+                  <Twitter className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleShare('linkedin')}
+                  className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#0a66c2] hover:text-white transition-all"
+                >
+                  <Linkedin className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-brand-500 hover:text-white transition-all"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
               </div>
             </div>
-          </section>
-        )}
 
-        {/* Description Section with Share */}
-        {project.fullDescription && (
-          <section className="py-16 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950">
-            <div className="section-container max-w-4xl">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
-                <h2 className="font-display text-3xl md:text-4xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
-                  About This Project
-                </h2>
-                
-                {/* Share Buttons */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-zinc-400 hidden sm:inline">Share:</span>
-                  <button
-                    onClick={() => handleShare('facebook')}
-                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#1877f2] hover:text-white transition-all"
-                    aria-label="Share on Facebook"
-                  >
-                    <Facebook className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleShare('twitter')}
-                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#1da1f2] hover:text-white transition-all"
-                    aria-label="Share on Twitter"
-                  >
-                    <Twitter className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleShare('linkedin')}
-                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-[#0a66c2] hover:text-white transition-all"
-                    aria-label="Share on LinkedIn"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleCopyLink}
-                    className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 hover:bg-brand-500 hover:text-white transition-all"
-                    aria-label="Copy link"
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
+            {/* Full Description (if no case study mapping, fallback to fullDescription) */}
+            {project.fullDescription && (
+              <div className="prose prose-zinc dark:prose-invert max-w-none prose-lg mb-8">
+                {project.fullDescription.split('\n').filter(Boolean).map((para, i) => (
+                  <p key={i} className="text-base md:text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5">
+                    {para}
+                  </p>
+                ))}
               </div>
-              
-              <div className="prose prose-zinc dark:prose-invert max-w-none prose-lg">
-                {project.fullDescription.split('\n').filter(Boolean).map((paragraph, i) => (
-                  <motion.p
-                    key={i}
+            )}
+
+            {/* Problem, Solution, Results from metadata */}
+            {caseStudy && (
+              <div className="space-y-8">
+                {caseStudy.problem && (
+                  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="text-base md:text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5"
                   >
-                    {paragraph}
-                  </motion.p>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+                    <h3 className="font-display text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+                      The Challenge
+                    </h3>
+                    <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                      {caseStudy.problem}
+                    </p>
+                  </motion.div>
+                )}
 
+                {caseStudy.solution && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <h3 className="font-display text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+                      Our Solution
+                    </h3>
+                    <p className="text-base text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                      {caseStudy.solution}
+                    </p>
+                  </motion.div>
+                )}
+
+                {caseStudy.results && caseStudy.results.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <h3 className="font-display text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+                      Key Results
+                    </h3>
+                    <ul className="space-y-3">
+                      {caseStudy.results.map((result, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-base text-zinc-600 dark:text-zinc-300">{result}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ─── Trust Section: Technologies, Features, Platforms ────────── */}
+        <section className="py-16 bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="section-container max-w-4xl">
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Technologies */}
+              {project.technologies && project.technologies.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-brand-500" /> Technologies
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {project.technologies.map((t) => (
+                      <span
+                        key={t.id}
+                        className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      >
+                        {t.technology.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Features (if available) */}
+              {caseStudy?.features && (
+                <div>
+                  <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-brand-500" /> Features Delivered
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {caseStudy.features.map((f, i) => (
+                      <li key={i} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Platform Coverage */}
+              {stats.platform && (
+                <div>
+                  <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 flex items-center gap-2">
+                    <Smartphone className="w-5 h-5 text-brand-500" /> Platform Coverage
+                  </h4>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">{stats.platform}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Final CTA ─────────────────────────────────────────────────── */}
         <ContactCta />
       </main>
 
-      {/* Lightbox Component */}
+      {/* Lightbox */}
       <Lightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}

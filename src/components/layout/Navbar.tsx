@@ -14,11 +14,12 @@ import { Logo } from '@/components/common/Logo';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/services', label: 'Services' },
-  { href: '/projects', label: 'Projects' },
   { href: '/packages', label: 'Packages' },
+    { href: '/testimonials', label: 'Testimonials' },
+  { href: '/projects', label: 'Projects' },
+    { href: '/features', label: 'Features' }, // ✅ Naya link
+  { href: '/services', label: 'Services' },
   { href: '/technologies', label: 'Technologies' },
-  { href: '/testimonials', label: 'Testimonials' },
   { href: '/how-to-use', label: 'Guide' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
