@@ -120,7 +120,7 @@ interface ProjectsData {
   last: boolean;
 }
 
-export function useProjects(page = 0, pageSize = 9) {
+export function useProjects(page = 0, pageSize = 10) {
   return useQuery<ProjectsData>({
     queryKey: ['projects', page],
     queryFn: async () => {

@@ -1,16 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Eye, EyeOff, Trash2, ExternalLink, Edit, X, Image as ImageIcon } from 'lucide-react';
-import { useAdminBanners } from '@/hooks/useApi';
+import {
+  Plus,
+  Eye,
+  EyeOff,
+  Trash2,
+  ExternalLink,
+  Edit,
+  X,
+  Image as ImageIcon,
+  Loader2,
+} from 'lucide-react';
+import {
+  useAdminBanners,
+  useAdminServices,
+  useAdminProjects,
+  useAdminPackages,
+  useAdminTestimonials,
+  useAdminTechnologies,
+} from '@/hooks/useApi';
 import { adminApi } from '@/services/api';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatDate, cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import type { BannerResponse, BannerType } from '@/types';
+import type {
+  BannerResponse,
+  BannerType,
+  ServiceResponse,
+  ProjectResponse,
+  PackageResponse,
+  TestimonialResponse,
+  TechnologyResponse,
+} from '@/types';
 
+// ─── Constants ────────────────────────────────────────────────────
 const BANNER_TYPES: { value: BannerType; label: string }[] = [
   { value: 'PACKAGE', label: 'Package' },
   { value: 'SERVICE', label: 'Service' },
@@ -20,7 +46,66 @@ const BANNER_TYPES: { value: BannerType; label: string }[] = [
   { value: 'TECHNOLOGY', label: 'Technology' },
 ];
 
-// Shared Modal for Create / Edit
+// ─── Helper: build entity map for dropdown ──────────────────────
+// Accepts any array of objects that have at least { id } and optional label fields.
+// We cast to 'any' to avoid complex union typing (safe for admin UI).
+function buildEntityMap(
+  items: any[] | undefined,
+  type: BannerType
+): Map<number, string> {
+  const map = new Map<number, string>();
+  if (!items) return map;
+
+  for (const item of items) {
+    let label = `ID: ${item.id}`;
+
+    // Use type‑specific fields to build a readable label
+    if (type === 'SERVICE' && item.name) {
+      label = item.name;
+    } else if (type === 'PROJECT' && item.title) {
+      label = item.title;
+    } else if (type === 'PACKAGE' && item.name) {
+      label = `${item.name} (${item.price} ${item.currencyCode})`;
+    } else if (type === 'TESTIMONIAL' && item.clientName) {
+      label = item.clientName;
+    } else if (type === 'TECHNOLOGY' && item.name) {
+      label = item.name;
+    }
+
+    map.set(item.id, label);
+  }
+
+  return map;
+}
+
+// ─── Custom hook to fetch entity list ──────────────────────────
+function useEntityList(type: BannerType | null) {
+  const services = useAdminServices(0, 100);
+  const projects = useAdminProjects(0, 100);
+  const packages = useAdminPackages(0, 100);
+  const testimonials = useAdminTestimonials(0, 100);
+  const technologies = useAdminTechnologies(0, 100);
+
+  const getData = () => {
+    switch (type) {
+      case 'SERVICE': return services;
+      case 'PROJECT': return projects;
+      case 'PACKAGE': return packages;
+      case 'TESTIMONIAL': return testimonials;
+      case 'TECHNOLOGY': return technologies;
+      default: return null;
+    }
+  };
+
+  const result = getData();
+  return {
+    data: result?.data?.content ?? [],
+    isLoading: result?.isLoading ?? false,
+    refetch: result?.refetch,
+  };
+}
+
+// ─── Banner Form Modal ───────────────────────────────────────────
 function BannerFormModal({
   isOpen,
   onClose,
@@ -34,6 +119,7 @@ function BannerFormModal({
   onSave: (formData: FormData) => Promise<void>;
   saving: boolean;
 }) {
+  // ─── State ──────────────────────────────────────────────────
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(
     initialData?.bannerImage?.optimizedKey || null
@@ -46,14 +132,61 @@ function BannerFormModal({
     startAt: initialData?.startAt ? initialData.startAt.slice(0, 16) : '',
     endAt: initialData?.endAt ? initialData.endAt.slice(0, 16) : '',
     active: initialData?.active ?? true,
+    cta: initialData?.cta || '',
+    heading: initialData?.heading || '',
+    subHeading: initialData?.subHeading || '',
   });
 
+  // ─── Entity list for dropdown ──────────────────────────────
+  const { data: entityList, isLoading: loadingEntities } = useEntityList(
+    form.type !== 'URL' ? form.type : null
+  );
+
+  // ─── Reset form on open ────────────────────────────────────
+  const prevTypeRef = useRef<BannerType | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPreview(initialData?.bannerImage?.optimizedKey || null);
+      setImage(null);
+      setForm({
+        type: (initialData?.type as BannerType) || 'URL',
+        redirectUrl: initialData?.redirectUrl || '',
+        referenceId: initialData?.referenceId?.toString() || '',
+        priority: String(initialData?.priority ?? 0),
+        startAt: initialData?.startAt ? initialData.startAt.slice(0, 16) : '',
+        endAt: initialData?.endAt ? initialData.endAt.slice(0, 16) : '',
+        active: initialData?.active ?? true,
+        cta: initialData?.cta || '',
+        heading: initialData?.heading || '',
+        subHeading: initialData?.subHeading || '',
+      });
+    }
+  }, [isOpen, initialData]);
+
+  // Clear reference when type changes
+  useEffect(() => {
+    const currentType = form.type;
+    const prevType = prevTypeRef.current;
+    if (prevType === currentType) return;
+    prevTypeRef.current = currentType;
+    setForm((f) => ({ ...f, referenceId: '' }));
+  }, [form.type]);
+
+  // ─── Handlers ───────────────────────────────────────────────
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImage(file);
       setPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setPreview(null);
+    const fileInput = document.getElementById('banner-image-input') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = async () => {
@@ -67,19 +200,33 @@ function BannerFormModal({
       return;
     }
     if (form.type !== 'URL' && !form.referenceId) {
-      toast.error(`Reference ID is required for ${form.type} type banners`);
+      toast.error(`Please select a ${form.type} for this banner`);
+      return;
+    }
+    if (!form.startAt) {
+      toast.error('Start date is required');
       return;
     }
 
     const fd = new FormData();
-    if (image) fd.append('bannerImageFile', image);
+
+    // Always send image as 'file' (matches backend BannerRequest)
+    if (image) {
+      fd.append('file', image);
+    }
+
     fd.append('type', form.type);
     if (form.redirectUrl) fd.append('redirectUrl', form.redirectUrl);
     if (form.referenceId) fd.append('referenceId', form.referenceId);
     fd.append('priority', form.priority);
     fd.append('active', String(form.active));
-    if (form.startAt) fd.append('startAt', new Date(form.startAt).toISOString());
+    fd.append('startAt', new Date(form.startAt).toISOString());
     if (form.endAt) fd.append('endAt', new Date(form.endAt).toISOString());
+
+    // v2 fields
+    if (form.cta) fd.append('cta', form.cta);
+    if (form.heading) fd.append('heading', form.heading);
+    if (form.subHeading) fd.append('subHeading', form.subHeading);
 
     await onSave(fd);
   };
@@ -87,7 +234,9 @@ function BannerFormModal({
   if (!isOpen) return null;
 
   const isUrlType = form.type === 'URL';
+  const entityMap = buildEntityMap(entityList, form.type);
 
+  // ─── Render ─────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <motion.div
@@ -110,37 +259,49 @@ function BannerFormModal({
             <label className="text-xs font-semibold text-zinc-500 mb-1.5 block">
               Banner Image {!initialData?.id && '*'}
             </label>
-            <label
-              className={cn(
-                'relative flex flex-col items-center justify-center w-full aspect-[3/1] rounded-xl border-2 border-dashed cursor-pointer transition-colors',
-                preview
-                  ? 'border-transparent'
-                  : 'border-zinc-300 dark:border-zinc-700 hover:border-brand-400'
-              )}
-            >
-              {preview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-xl"
+            <div className="relative">
+              <label
+                className={cn(
+                  'relative flex flex-col items-center justify-center w-full aspect-[3/1] rounded-xl border-2 border-dashed cursor-pointer transition-colors',
+                  preview
+                    ? 'border-transparent'
+                    : 'border-zinc-300 dark:border-zinc-700 hover:border-brand-400'
+                )}
+              >
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <ImageIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                    <p className="text-sm text-zinc-400">Click to upload banner image</p>
+                    <p className="text-xs text-zinc-300 dark:text-zinc-600 mt-1">
+                      PNG, JPG, WebP — Recommended: 1920×480px
+                    </p>
+                  </div>
+                )}
+                <input
+                  id="banner-image-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
-              ) : (
-                <div className="text-center">
-                  <ImageIcon className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-                  <p className="text-sm text-zinc-400">Click to upload banner image</p>
-                  <p className="text-xs text-zinc-300 dark:text-zinc-600 mt-1">
-                    PNG, JPG, WebP — Recommended: 1920×480px
-                  </p>
-                </div>
+              </label>
+              {preview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
+                  title="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
+            </div>
             {initialData?.id && (
               <p className="text-xs text-zinc-400 mt-1">
                 Leave empty to keep current image
@@ -148,6 +309,7 @@ function BannerFormModal({
             )}
           </div>
 
+          {/* Type & Priority */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-zinc-500 mb-1 block">Type *</label>
@@ -177,26 +339,40 @@ function BannerFormModal({
             </div>
           </div>
 
-          {/* Reference ID for non-URL types */}
+          {/* Reference Dropdown */}
           {!isUrlType && (
             <div>
               <label className="text-xs font-semibold text-zinc-500 mb-1 block">
-                {form.type} ID (referenceId) *
+                {form.type} * (Select from list)
               </label>
-              <input
-                className="input-base"
-                type="number"
-                placeholder={`Enter ${form.type.toLowerCase()} ID`}
-                value={form.referenceId}
-                onChange={(e) => setForm((f) => ({ ...f, referenceId: e.target.value }))}
-              />
-              <p className="text-xs text-zinc-400 mt-1">
-                The ID of the {form.type.toLowerCase()} this banner should link to
-              </p>
+              {loadingEntities ? (
+                <div className="flex items-center gap-2 text-sm text-zinc-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading {form.type}s...
+                </div>
+              ) : (
+                <select
+                  className="input-base"
+                  value={form.referenceId}
+                  onChange={(e) => setForm((f) => ({ ...f, referenceId: e.target.value }))}
+                >
+                  <option value="">Select a {form.type}...</option>
+                  {Array.from(entityMap.entries()).map(([id, label]) => (
+                    <option key={id} value={String(id)}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {entityMap.size === 0 && !loadingEntities && (
+                <p className="text-xs text-amber-500 mt-1">
+                  No {form.type}s found. Please create one first.
+                </p>
+              )}
             </div>
           )}
 
-          {/* Redirect URL for URL type */}
+          {/* Redirect URL */}
           {isUrlType && (
             <div>
               <label className="text-xs font-semibold text-zinc-500 mb-1 block">
@@ -212,14 +388,49 @@ function BannerFormModal({
             </div>
           )}
 
+          {/* v2 fields */}
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-zinc-500 mb-1 block">
+                CTA (Call‑to‑Action)
+              </label>
+              <input
+                className="input-base"
+                placeholder="e.g. Learn More"
+                value={form.cta}
+                onChange={(e) => setForm((f) => ({ ...f, cta: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-zinc-500 mb-1 block">Heading</label>
+              <input
+                className="input-base"
+                placeholder="Main heading"
+                value={form.heading}
+                onChange={(e) => setForm((f) => ({ ...f, heading: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-zinc-500 mb-1 block">Sub‑heading</label>
+              <input
+                className="input-base"
+                placeholder="Sub‑heading text"
+                value={form.subHeading}
+                onChange={(e) => setForm((f) => ({ ...f, subHeading: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-zinc-500 mb-1 block">Start Date</label>
+              <label className="text-xs font-semibold text-zinc-500 mb-1 block">Start Date *</label>
               <input
                 className="input-base"
                 type="datetime-local"
                 value={form.startAt}
                 onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))}
+                required
               />
             </div>
             <div>
@@ -233,6 +444,7 @@ function BannerFormModal({
             </div>
           </div>
 
+          {/* Active */}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -273,6 +485,7 @@ function BannerFormModal({
   );
 }
 
+// ─── Main Page ──────────────────────────────────────────────────
 export default function AdminBannersPage() {
   const { data: banners, isLoading } = useAdminBanners();
   const [showCreate, setShowCreate] = useState(false);
@@ -280,6 +493,7 @@ export default function AdminBannersPage() {
   const [saving, setSaving] = useState(false);
   const qc = useQueryClient();
 
+  // ─── Handlers ───────────────────────────────────────────────
   const handleToggle = async (id: number, active: boolean) => {
     try {
       if (active) await adminApi.disableBanner(id);
@@ -334,6 +548,7 @@ export default function AdminBannersPage() {
 
   return (
     <div>
+      {/* Modals */}
       <BannerFormModal
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
@@ -341,13 +556,14 @@ export default function AdminBannersPage() {
         saving={saving}
       />
       <BannerFormModal
-  isOpen={!!editingBanner}
-  onClose={() => setEditingBanner(null)}
-  initialData={editingBanner || undefined}
-  onSave={(fd) => editingBanner ? handleUpdate(editingBanner.id, fd) : Promise.resolve()}
-  saving={saving}
-/>
+        isOpen={!!editingBanner}
+        onClose={() => setEditingBanner(null)}
+        initialData={editingBanner || undefined}
+        onSave={(fd) => (editingBanner ? handleUpdate(editingBanner.id, fd) : Promise.resolve())}
+        saving={saving}
+      />
 
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-2xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -362,6 +578,7 @@ export default function AdminBannersPage() {
         </button>
       </div>
 
+      {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {isLoading
           ? Array(6)
@@ -382,7 +599,6 @@ export default function AdminBannersPage() {
               >
                 <div className="relative aspect-[3/1] bg-zinc-100 dark:bg-zinc-800">
                   {banner.bannerImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={getOptimizedUrl(banner.bannerImage)}
                       alt={`Banner ${banner.id}`}
@@ -440,6 +656,13 @@ export default function AdminBannersPage() {
                         {formatDate(banner.startAt)}{' '}
                         {banner.endAt ? `→ ${formatDate(banner.endAt)}` : '→ No end'}
                       </p>
+                    )}
+                    {(banner.heading || banner.subHeading || banner.cta) && (
+                      <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+                        {banner.heading && <p>📌 {banner.heading}</p>}
+                        {banner.subHeading && <p>📝 {banner.subHeading}</p>}
+                        {banner.cta && <p>🔗 {banner.cta}</p>}
+                      </div>
                     )}
                   </div>
 

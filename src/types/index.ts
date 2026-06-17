@@ -345,7 +345,14 @@ export interface BannerResponse {
   startAt: string;
   endAt: string | null;
   priority: number;
-}// ============================================================
+  // 👇 New fields (v2)
+  cta: string | null;
+  heading: string | null;
+  subHeading: string | null;
+}
+
+
+// ============================================================
 // Contact - Enums matching backend
 // ============================================================
 
