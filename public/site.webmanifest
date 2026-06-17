@@ -1,17 +1,7 @@
 {
-  "name": "BrizerHero",
+  "name": "BrizerHero - Website & App Development Agency",
   "short_name": "BrizerHero",
-  "description": "BrizerHero E-commerce Solutions Agency",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f172a",
   "icons": [
-    {
-      "src": "/favicon.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon"
-    },
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
@@ -22,5 +12,8 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "theme_color": "#6366f1",
+  "background_color": "#ffffff",
+  "display": "standalone"
 }

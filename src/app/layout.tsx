@@ -71,13 +71,8 @@ export const metadata: Metadata = {
         url: '/favicon.ico',
       },
       {
-        url: '/android-chrome-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        url: '/android-chrome-512x512.png',
-        sizes: '512x512',
+        url: '/favicon-96x96.png',
+        sizes: '96x96',
         type: 'image/png',
       },
     ],
@@ -102,7 +97,6 @@ export const metadata: Metadata = {
     title: 'BrizerHero — Website, App & Software Development Agency',
     description:
       'Premium software development agency building websites, mobile apps, ecommerce solutions and SaaS products.',
-
     images: [
       {
         url: '/og-image.png',
@@ -171,27 +165,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="manifest" href="/site.webmanifest" />
-
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="192x192"
-          href="/android-chrome-192x192.png"
-        />
-
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="512x512"
-          href="/android-chrome-512x512.png"
-        />
-
-        <link
-          rel="apple-touch-icon"
-          href="/apple-touch-icon.png"
+        <meta
+          name="apple-mobile-web-app-title"
+          content="BrizerHero"
         />
 
         <script
