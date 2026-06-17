@@ -5,12 +5,13 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   ArrowLeft, ExternalLink, ArrowRight, 
-  Sparkles, Code, Briefcase, Zap, Award, CheckCircle2 
+  Sparkles, Code, Briefcase, Zap, Award, CheckCircle2, Shield
 } from 'lucide-react';
 import { useTechnology } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
 import type { TechnologyResponse, TechnologyLinkResponse } from '@/types';
+import { useState } from 'react';
 
 interface Props { 
   slug: string;
@@ -31,12 +32,13 @@ const staggerContainer = {
 };
 
 export function TechnologyDetailClient({ slug }: Props) {
+  // ✅ ALL HOOKS – unconditionally, in the same order every render
   const { data: tech, isLoading, error, refetch } = useTechnology(slug);
-  
-  // Scroll progress bar
   const { scrollYProgress } = useScroll();
   const width = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+  const [iconError, setIconError] = useState(false);
 
+  // ── Early returns (safe – hooks already called) ──
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32">
@@ -99,17 +101,20 @@ export function TechnologyDetailClient({ slug }: Props) {
     );
   }
 
+  // ── Derived values (after early returns, safe to use `tech`) ──
+  const iconSrc = tech.iconImage ? getOptimizedUrl(tech.iconImage) : null;
+
+  // ── Success ──
   return (
     <>
-      {/* Reading Progress Bar */}
+      {/* Progress Bar */}
       <motion.div 
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-cyan-500 z-50 origin-left"
         style={{ scaleX: width }}
       />
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background orbs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 -left-32 w-80 h-80 bg-brand-500/20 rounded-full blur-[100px]" />
           <div className="absolute bottom-10 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-[120px]" />
@@ -138,18 +143,20 @@ export function TechnologyDetailClient({ slug }: Props) {
           >
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Icon */}
+              {/* ─── Icon – prominent & safe ─── */}
               <motion.div variants={fadeInUp}>
                 <div className="relative inline-flex">
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-cyan-500 rounded-2xl blur-xl opacity-50" />
                   <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg flex items-center justify-center">
-                    {tech.iconImage ? (
+                    {iconSrc && !iconError ? (
                       <Image
-                        src={getOptimizedUrl(tech.iconImage)}
+                        src={iconSrc}
                         alt={tech.name}
                         width={40}
                         height={40}
-                        className="w-10 h-10 object-contain brightness-0 invert"
+                        className="w-10 h-10 object-contain"
+                        onError={() => setIconError(true)}
+                        unoptimized // fallback if domain not configured
                       />
                     ) : (
                       <Code className="w-8 h-8 text-white" />
@@ -174,7 +181,7 @@ export function TechnologyDetailClient({ slug }: Props) {
                 </motion.p>
               )}
 
-              {/* External Links - FIXED: links array contains TechnologyLinkResponse with nested link property */}
+              {/* External Links */}
               {tech.links && tech.links.length > 0 && (
                 <motion.div variants={fadeInUp} className="flex flex-wrap gap-3 pt-2">
                   {tech.links.map((linkItem: TechnologyLinkResponse) => (
@@ -219,7 +226,7 @@ export function TechnologyDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* Why Choose This Technology Section */}
+      {/* Why Choose This Technology */}
       <section className="py-20 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950">
         <div className="section-container max-w-4xl mx-auto">
           <motion.div
@@ -262,7 +269,7 @@ export function TechnologyDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* Projects & Showcase CTA */}
+      {/* Projects CTA */}
       <section className="py-16">
         <div className="section-container max-w-4xl mx-auto">
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-600 to-violet-600 p-8 md:p-12 text-center">
@@ -285,6 +292,3 @@ export function TechnologyDetailClient({ slug }: Props) {
     </>
   );
 }
-
-// Import missing icons
-import { Shield } from 'lucide-react';

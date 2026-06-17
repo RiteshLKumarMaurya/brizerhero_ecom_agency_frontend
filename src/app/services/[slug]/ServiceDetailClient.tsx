@@ -33,11 +33,13 @@ const staggerContainer = {
 
 // ─── Component ────────────────────────────────────────────────────────────
 export function ServiceDetailClient({ slug }: Props) {
+  // ✅ ALL HOOKS – unconditionally, in the same order every render
   const { data: service, isLoading, error, refetch } = useService(slug);
   const { scrollYProgress } = useScroll();
   const width = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+  const [iconError, setIconError] = useState(false);
 
-  // ── Loading ──
+  // ── Early returns (safe – hooks already called) ──
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32">
@@ -68,7 +70,6 @@ export function ServiceDetailClient({ slug }: Props) {
     );
   }
 
-  // ── Error ──
   if (error || !service) {
     return (
       <div className="min-h-[70vh] pt-32 flex items-center justify-center px-4">
@@ -97,8 +98,7 @@ export function ServiceDetailClient({ slug }: Props) {
     );
   }
 
-  // ── Icon fallback state ──
-  const [iconError, setIconError] = useState(false);
+  // ── Derived values (after early returns, safe to use `service`) ──
   const iconSrc = service.iconImage ? getOptimizedUrl(service.iconImage) : null;
 
   // ── Success ──
@@ -195,7 +195,7 @@ export function ServiceDetailClient({ slug }: Props) {
               )}
             </div>
 
-            {/* CTA Card – unchanged */}
+            {/* CTA Card */}
             <motion.div 
               variants={fadeInUp}
               className="lg:col-span-2 lg:sticky lg:top-28"
@@ -361,6 +361,7 @@ export function ServiceDetailClient({ slug }: Props) {
           </div>
         </div>
       </section>
+
       <ContactCta />
     </>
   );
