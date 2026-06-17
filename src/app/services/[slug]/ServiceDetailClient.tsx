@@ -361,7 +361,6 @@ export function ServiceDetailClient({ slug }: Props) {
           </div>
         </div>
       </section>
-
       <ContactCta />
     </>
   );
