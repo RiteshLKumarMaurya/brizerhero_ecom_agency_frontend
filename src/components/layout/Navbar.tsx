@@ -15,8 +15,8 @@ import { Logo } from '@/components/common/Logo';
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/packages', label: 'Packages' },
-    { href: '/testimonials', label: 'Testimonials' },
   { href: '/projects', label: 'Projects' },
+    { href: '/testimonials', label: 'Testimonials' },
     { href: '/features', label: 'Features' }, // ✅ Naya link
   { href: '/services', label: 'Services' },
   { href: '/technologies', label: 'Technologies' },

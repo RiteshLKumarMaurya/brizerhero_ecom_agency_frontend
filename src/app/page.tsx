@@ -36,8 +36,7 @@ export default function HomePage() {
       <FeaturesPreview />
       <WhyChooseUs />
       <TestimonialsSection />
-      <ProcessSection />
-      <FinalCta />
+      <ContactCta />
     </>
   );
 }

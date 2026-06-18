@@ -816,16 +816,16 @@ export function TestimonialsPageClient() {
       </section>
 
       {/* ─── Trust Wall ──────────────────────────────────────────────────── */}
-      <TrustWall />
+      {/* <TrustWall /> */}
 
       {/* ─── Video Testimonials ──────────────────────────────────────────── */}
-      <VideoTestimonials />
+      {/* <VideoTestimonials /> */}
 
       {/* ─── Success Metrics ─────────────────────────────────────────────── */}
-      <SuccessMetrics />
+      {/* <SuccessMetrics /> */}
 
       {/* ─── Final CTA ──────────────────────────────────────────────────── */}
-      <FinalCTA />
+      <ContactCta />
 
       {/* ─── Modal ────────────────────────────────────────────────────────── */}
       <AnimatePresence>
