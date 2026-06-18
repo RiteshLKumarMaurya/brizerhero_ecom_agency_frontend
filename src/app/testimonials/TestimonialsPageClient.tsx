@@ -597,7 +597,7 @@ function VideoTestimonials() {
 // ─── Success Metrics ──────────────────────────────────────────────────
 function SuccessMetrics() {
   const metrics = [
-    { icon: Award, label: 'Ecommerce Features Delivered', value: '5+' },
+    { icon: Award, label: 'Ecommerce Features Delivered', value: '100+' },
     { icon: Clock, label: 'Development Hours', value: '100+' },
     { icon: Smartphone, label: 'Platforms Supported', value: 'Multiple' },
     { icon: Shield, label: 'End-to-End Solutions', value: '100%' },
@@ -723,7 +723,7 @@ export function TestimonialsPageClient() {
               <p className="text-sm font-bold text-zinc-900 dark:text-white">4.9 Average Rating</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50">
-              <p className="text-xl font-bold text-brand-600">50+</p>
+              <p className="text-xl font-bold text-brand-600">5+</p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">Projects Delivered</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50">

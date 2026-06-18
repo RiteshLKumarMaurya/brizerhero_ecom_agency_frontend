@@ -1,18 +1,18 @@
+// app/packages/[slug]/PackageDetailClient.tsx
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, ArrowRight, Zap, Clock, Package, Users, Settings, Shield, Star, Globe } from 'lucide-react';
+import { ArrowLeft, Check, ArrowRight, Zap, Clock, Package, Users, Settings, Shield, Star } from 'lucide-react';
 import { usePackage } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatPrice } from '@/lib/utils';
 import { ContactCta } from '@/components/sections/ContactCta';
-import { packageMetadataMap } from '@/lib/packageMetadata';
 
 interface Props { slug: string; }
 
-// ─── Static benefits (can be moved to metadata later) ───────────────────
+// ─── Static benefits (can be moved to API later) ───────────────────────
 const benefits = [
   { icon: Clock, text: '30‑day delivery (typical)' },
   { icon: Users, text: 'Dedicated project manager' },
@@ -22,7 +22,6 @@ const benefits = [
 
 export function PackageDetailClient({ slug }: Props) {
   const { data: pkg, isLoading, error } = usePackage(slug);
-  const metadata = pkg ? packageMetadataMap[pkg.slug] : null;
 
   // ── Loading ──
   if (isLoading) {
@@ -51,9 +50,12 @@ export function PackageDetailClient({ slug }: Props) {
     );
   }
 
+  const iconSrc = pkg.iconImage ? getOptimizedUrl(pkg.iconImage) : null;
+  const services = pkg.services || [];
+
   return (
     <>
-      {/* ─── Hero Section with Thumbnail ────────────────────────────────── */}
+      {/* ─── Hero Section ────────────────────────────────────────────────── */}
       <section className="relative pt-32 pb-16 bg-white dark:bg-zinc-900 overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
         <div className="section-container">
@@ -65,32 +67,32 @@ export function PackageDetailClient({ slug }: Props) {
           </Link>
 
           <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* ─── Left: Thumbnail + Content ────────────────────────────── */}
+            {/* ─── Left: Content ────────────────────────────────────────── */}
             <div>
               {/* Thumbnail Banner */}
-              {metadata?.thumbnail ? (
-                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl mb-6 bg-gradient-to-br from-brand-600 to-purple-600">
+              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-xl mb-6 bg-gradient-to-br from-brand-600 to-purple-600">
+                {iconSrc ? (
                   <Image
-                    src={metadata.thumbnail}
+                    src={iconSrc}
                     alt={pkg.name}
                     fill
                     className="object-cover"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                </div>
-              ) : (
-                <div className="aspect-[16/9] rounded-2xl bg-gradient-to-br from-brand-600/20 to-purple-600/20 flex items-center justify-center mb-6">
-                  <Zap className="w-16 h-16 text-brand-400/50" />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-16 h-16 text-white/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              </div>
 
               {/* Title & Price */}
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center flex-shrink-0">
-                  {pkg.iconImage ? (
+                  {iconSrc ? (
                     <Image
-                      src={getOptimizedUrl(pkg.iconImage)}
+                      src={iconSrc}
                       alt={pkg.name}
                       width={32}
                       height={32}
@@ -122,45 +124,6 @@ export function PackageDetailClient({ slug }: Props) {
                 {pkg.shortDescription}
               </p>
 
-              {/* Package Stats from metadata */}
-              {metadata?.stats && (
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <Package className="w-4 h-4 text-brand-500" />
-                    <span>{metadata.stats.products} products</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <Clock className="w-4 h-4 text-brand-500" />
-                    <span>{metadata.stats.delivery}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <Shield className="w-4 h-4 text-brand-500" />
-                    <span>{metadata.stats.support} support</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <Globe className="w-4 h-4 text-brand-500" />
-                    <span>{metadata.stats.platforms}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Package Highlights from metadata */}
-              {metadata?.highlights && metadata.highlights.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                    Package Highlights
-                  </p>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {metadata.highlights.slice(0, 8).map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                        <Check className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
               {/* Benefits row */}
               <div className="flex flex-wrap gap-4">
                 {benefits.map(({ icon: Icon, text }) => (
@@ -172,7 +135,7 @@ export function PackageDetailClient({ slug }: Props) {
               </div>
             </div>
 
-            {/* ─── Right: CTA Card ───────────────────────────────────────── */}
+            {/* ─── Right: CTA Card ──────────────────────────────────────── */}
             <div className="lg:sticky lg:top-24">
               <div className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl p-6 space-y-5">
                 <div className="text-center border-b border-zinc-100 dark:border-zinc-800 pb-4">
@@ -225,7 +188,7 @@ export function PackageDetailClient({ slug }: Props) {
       )}
 
       {/* ─── Services Included ──────────────────────────────────────────── */}
-      {pkg.services && pkg.services.length > 0 && (
+      {services.length > 0 && (
         <section className="section-padding bg-zinc-50 dark:bg-zinc-950">
           <div className="section-container">
             <motion.div
@@ -244,7 +207,7 @@ export function PackageDetailClient({ slug }: Props) {
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {pkg.services
+              {services
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map((mapping, idx) => (
                   <motion.div

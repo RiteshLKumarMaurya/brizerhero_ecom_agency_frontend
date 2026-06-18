@@ -5,11 +5,11 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
 
 const metrics = [
-  { label: 'Orders Managed', value: 15000, suffix: '+' },
-  { label: 'Features Delivered', value: 50, suffix: '+' },
-  { label: 'Apps Developed', value: 12, suffix: '+' },
-  { label: 'Websites Built', value: 18, suffix: '+' },
-  { label: 'Admin Panels Delivered', value: 10, suffix: '+' },
+  { label: 'Orders Managed', value: 6, suffix: '+' },
+  { label: 'Features Delivered', value: 100, suffix: '+' },
+  { label: 'Apps Developed', value: 2, suffix: '+' },
+  { label: 'Websites Built', value: 5, suffix: '+' },
+  { label: 'Admin Panels Delivered', value: 3, suffix: '+' },
 ];
 
 function Counter({ target, suffix }: { target: number; suffix: string }) {

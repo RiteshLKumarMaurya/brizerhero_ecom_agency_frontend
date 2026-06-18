@@ -8,7 +8,7 @@ export function getCdnUrl(key: string | null | undefined): string {
 
 export function getOptimizedUrl(media: { optimizedKey?: string; originalKey?: string } | null | undefined): string {
   if (!media) return '/images/placeholder.webp';
-  return getCdnUrl(media.optimizedKey || media.originalKey);
+  return getCdnUrl(media.originalKey);
 }
 
 export function getThumbUrl(media: { thumbKey?: string; optimizedKey?: string; originalKey?: string } | null | undefined): string {

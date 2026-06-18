@@ -1,3 +1,4 @@
+// app/packages/PackagesPageClient.tsx
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -12,7 +13,6 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  Briefcase,
   Star,
   Zap,
   Clock,
@@ -27,13 +27,11 @@ import {
   BarChart3,
   Smartphone,
   LayoutDashboard,
-  Globe,
 } from 'lucide-react';
 import { usePackages } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatPrice, cn } from '@/lib/utils';
 import { ContactCta } from '@/components/sections/ContactCta';
-import { packageMetadataMap } from '@/lib/packageMetadata';
 import type { PackageResponse, PackageServiceResponse, CurrencyCode } from '@/types';
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────
@@ -58,32 +56,14 @@ function PackageCardSkeleton() {
 
 // ─── Package Card ──────────────────────────────────────────────────────────
 function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: number; featured?: boolean }) {
-  const metadata = packageMetadataMap[pkg.slug] || {
-    thumbnail: null,
-    bestFor: 'All Businesses',
-    stats: {
-      products: 'Varies',
-      delivery: '2–4 weeks',
-      support: '3 months',
-      platforms: 'Web',
-    },
-  };
-
   const [imageError, setImageError] = useState(false);
   const services = pkg.services || [];
-
   const isFeatured = featured || (index === 1);
 
-  // Use thumbnail from metadata, fallback to iconImage
-  const thumbnailSrc = metadata.thumbnail && !imageError
-    ? metadata.thumbnail
-    : pkg.iconImage
-    ? getOptimizedUrl(pkg.iconImage)
-    : null;
+  const iconSrc = pkg.iconImage ? getOptimizedUrl(pkg.iconImage) : null;
 
   // Get service names for highlights
   const serviceNames = services.map(s => s.serviceResponse?.name).filter(Boolean) as string[];
-  // Show up to 6 services
   const highlights = serviceNames.slice(0, 6);
   const hasMore = serviceNames.length > 6;
 
@@ -108,9 +88,9 @@ function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: nu
 
       {/* Thumbnail Banner */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-brand-600 to-purple-600 flex-shrink-0">
-        {thumbnailSrc ? (
+        {iconSrc && !imageError ? (
           <img
-            src={thumbnailSrc}
+            src={iconSrc}
             alt={pkg.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}
@@ -135,18 +115,10 @@ function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: nu
             </span>
           )}
         </div>
-
-        {/* Best For badge at bottom of thumbnail */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <span className="inline-block px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs font-medium">
-            Best for: {metadata.bestFor}
-          </span>
-        </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-6 flex flex-col">
-        {/* Title & Price */}
         <div className="flex justify-between items-start gap-2 mb-1">
           <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-100">
             {pkg.name}
@@ -159,50 +131,29 @@ function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: nu
           <span className="text-xs text-zinc-400">one‑time</span>
         </div>
 
-        {/* Short description */}
         <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-2">
           {pkg.shortDescription}
         </p>
 
-        {/* Highlights – now from actual services */}
-        <div className="mb-4">
-          <div className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
-            Package Highlights
+        {serviceNames.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+              Package Highlights
+            </div>
+            <ul className="space-y-1.5">
+              {highlights.slice(0, 6).map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <Check className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </li>
+              ))}
+              {hasMore && (
+                <li className="text-xs text-brand-500">+{serviceNames.length - 6} more</li>
+              )}
+            </ul>
           </div>
-          <ul className="space-y-1.5">
-            {highlights.slice(0, 6).map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                <Check className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
-                <span>{item}</span>
-              </li>
-            ))}
-            {hasMore && (
-              <li className="text-xs text-brand-500">+{serviceNames.length - 6} more</li>
-            )}
-          </ul>
-        </div>
+        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-1 text-xs mb-5">
-          <div className="flex items-center gap-1.5">
-            <Package className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-zinc-600 dark:text-zinc-400">{metadata.stats.products} products</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-zinc-600 dark:text-zinc-400">{metadata.stats.delivery}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-zinc-600 dark:text-zinc-400">{metadata.stats.support} support</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-zinc-600 dark:text-zinc-400">{metadata.stats.platforms}</span>
-          </div>
-        </div>
-
-        {/* CTA */}
         <Link
           href={`/packages/${pkg.slug}`}
           className={cn(
@@ -217,22 +168,27 @@ function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: nu
   );
 }
 
-// ─── Comparison Table (unchanged) ──────────────────────────────────────
-function ComparisonTable({ packages, allServices }: { packages: PackageResponse[]; allServices: string[] }) {
-  const categories: Record<string, string[]> = {
-    'Core Ecommerce': ['Ecommerce Website', 'Admin Dashboard', 'Product Management', 'Inventory Management'],
-    'Mobile Apps': ['Android Ecommerce App', 'iOS Ecommerce App'],
-    'Advanced Features': ['Multi‑vendor Support', 'Delivery Management App', 'Vendor Panel', 'AI Recommendations'],
-    'Integrations': ['Razorpay Integration', 'Payment Gateway', 'Email Automation', 'Chat Support'],
-    'Performance': ['SEO Optimization', 'Advanced Analytics', 'Headless CMS'],
-  };
+// ─── Dynamic Comparison Table ──────────────────────────────────────────────
+function ComparisonTable({ packages }: { packages: PackageResponse[] }) {
+  // Collect all unique service names from all packages
+  const allServiceNames = useMemo(() => {
+    const set = new Set<string>();
+    packages.forEach(p => {
+      p.services?.forEach(s => {
+        if (s.serviceResponse?.name) set.add(s.serviceResponse.name);
+      });
+    });
+    return Array.from(set).sort();
+  }, [packages]);
+
+  if (allServiceNames.length === 0) return null;
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
-      <table className="w-full min-w-[800px] text-sm">
+      <table className="w-full min-w-[640px] text-sm">
         <thead className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
           <tr>
-            <th className="text-left px-5 py-4 font-semibold text-zinc-700 dark:text-zinc-300">Feature</th>
+            <th className="text-left px-5 py-4 font-semibold text-zinc-700 dark:text-zinc-300">Service</th>
             {packages.map(p => (
               <th key={p.id} className="px-5 py-4 text-center font-semibold text-zinc-700 dark:text-zinc-300">
                 {p.name}
@@ -244,38 +200,29 @@ function ComparisonTable({ packages, allServices }: { packages: PackageResponse[
           </tr>
         </thead>
         <tbody>
-          {Object.entries(categories).map(([category, features]) => (
-            <React.Fragment key={category}>
-              <tr className="bg-zinc-50/50 dark:bg-zinc-900/30">
-                <td colSpan={packages.length + 1} className="px-5 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  {category}
-                </td>
+          {allServiceNames.map((serviceName) => {
+            const included = packages.map(p =>
+              p.services?.some(s => s.serviceResponse?.name === serviceName)
+            );
+            return (
+              <tr key={serviceName} className="border-t border-zinc-100 dark:border-zinc-800">
+                <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{serviceName}</td>
+                {included.map((has, i) => (
+                  <td key={i} className="px-5 py-3 text-center">
+                    {has ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-xs font-medium">
+                        <Check className="w-3 h-3" /> Included
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">
+                        <X className="w-3 h-3" /> Not included
+                      </span>
+                    )}
+                  </td>
+                ))}
               </tr>
-              {features.map((feature, idx) => {
-                const included = packages.map(p =>
-                  p.services?.some(s => s.serviceResponse?.name === feature)
-                );
-                return (
-                  <tr key={feature} className="border-t border-zinc-100 dark:border-zinc-800">
-                    <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{feature}</td>
-                    {included.map((has, i) => (
-                      <td key={i} className="px-5 py-3 text-center">
-                        {has ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-xs font-medium">
-                            <Check className="w-3 h-3" /> Included
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">
-                            <X className="w-3 h-3" /> Not included
-                          </span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </React.Fragment>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -306,7 +253,8 @@ export function PackagesPageClient() {
     return result;
   }, [packages, search, sort]);
 
-  const allServices = useMemo(() => {
+  // Compute all service names for trust metrics (dynamic)
+  const allServiceNames = useMemo(() => {
     if (!packages) return [];
     const set = new Set<string>();
     packages.forEach(p => {
@@ -318,10 +266,10 @@ export function PackagesPageClient() {
   }, [packages]);
 
   const trustMetrics = [
-    { label: 'Features', value: allServices.length + 20, suffix: '+' },
+    { label: 'Features', value: allServiceNames.length + 20, suffix: '+' },
     { label: 'Mobile Apps', value: 'Included' },
     { label: 'Admin Dashboard', value: 'Yes' },
-    { label: 'Secure Payments', value: 'Razorpay' },
+    { label: 'Secure Payments', value: 'Razorpay/Stripe' },
   ];
 
   const faqs = [
@@ -356,54 +304,33 @@ export function PackagesPageClient() {
 
   return (
     <>
-      {/* ─── Hero Section ─────────────────────────────────────────────────── */}
+      {/* Hero Section */}
       <section className="relative pt-28 pb-12 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
         <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
         <div className="section-container text-center max-w-3xl mx-auto relative">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="eyebrow justify-center"
-          >
-            Solutions
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mt-2 mb-5"
-          >
+          <span className="eyebrow justify-center">Solutions</span>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mt-2 mb-5">
             Ecommerce Solutions{' '}
             <span className="bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent">
               Built For Growth
             </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed"
-          >
+          </h1>
+          <p className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
             Launch, manage and scale your ecommerce business with complete ecommerce ecosystem packages.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mt-8"
-          >
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mt-8">
             {trustMetrics.map((metric, idx) => (
               <div key={idx} className="text-center p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50">
                 <p className="text-xl font-bold text-zinc-900 dark:text-white">{metric.value}{metric.suffix || ''}</p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">{metric.label}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ─── Search & Filter ─────────────────────────────────────────────── */}
+      {/* Search & Filter */}
       {!isLoading && packages && packages.length > 0 && (
         <div className="section-container pb-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
@@ -435,7 +362,7 @@ export function PackagesPageClient() {
         </div>
       )}
 
-      {/* ─── Packages Grid ────────────────────────────────────────────────── */}
+      {/* Packages Grid */}
       <section className="section-padding pt-0">
         <div className="section-container">
           <AnimatePresence mode="wait">
@@ -476,8 +403,8 @@ export function PackagesPageClient() {
         </div>
       </section>
 
-      {/* ─── Comparison Table Toggle ─────────────────────────────────────── */}
-      {!isLoading && packages && packages.length > 1 && allServices.length > 0 && (
+      {/* Comparison Table Toggle */}
+      {!isLoading && packages && packages.length > 1 && allServiceNames.length > 0 && (
         <div className="section-container pb-4">
           <button
             onClick={() => setShowCompare(!showCompare)}
@@ -489,16 +416,16 @@ export function PackagesPageClient() {
         </div>
       )}
 
-      {/* ─── Comparison Table ────────────────────────────────────────────── */}
-      {showCompare && !isLoading && packages && packages.length > 1 && allServices.length > 0 && (
+      {/* Comparison Table (dynamic) */}
+      {showCompare && !isLoading && packages && packages.length > 1 && allServiceNames.length > 0 && (
         <section className="section-padding pt-0">
           <div className="section-container">
-            <ComparisonTable packages={packages} allServices={allServices} />
+            <ComparisonTable packages={packages} />
           </div>
         </section>
       )}
 
-      {/* ─── What Happens After Purchase ────────────────────────────────── */}
+      {/* What Happens After Purchase */}
       <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
         <div className="section-container">
           <motion.div
@@ -542,7 +469,7 @@ export function PackagesPageClient() {
         </div>
       </section>
 
-      {/* ─── ROI Section ──────────────────────────────────────────────────── */}
+      {/* ROI Section */}
       <section className="py-20 bg-white dark:bg-zinc-900">
         <div className="section-container">
           <motion.div
@@ -586,7 +513,7 @@ export function PackagesPageClient() {
         </div>
       </section>
 
-      {/* ─── FAQ Section ──────────────────────────────────────────────────── */}
+      {/* FAQ Section */}
       <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
         <div className="section-container max-w-2xl mx-auto">
           <motion.div

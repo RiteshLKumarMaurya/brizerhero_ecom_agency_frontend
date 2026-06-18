@@ -1,6 +1,7 @@
+// app/projects/ProjectsPageClient.tsx
 'use client';
 
-import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,22 +12,12 @@ import {
   ChevronRight,
   AlertCircle,
   X,
-  ExternalLink,
   Calendar,
-  Package,
   Layers,
-  Link as LinkIcon,
-  Image as ImageIcon,
-  TrendingUp,
-  ShoppingBag,
-  Users,
-  Smartphone,
-  CheckCircle,
 } from 'lucide-react';
 import { useProjects } from '@/hooks/useApi';
-import { getThumbUrl, getOptimizedUrl } from '@/lib/cdn';
+import { getOptimizedUrl, getThumbUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
-import { projectCaseStudyMap } from '@/lib/projectMetadata';
 import type { ProjectResponse } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
@@ -63,10 +54,6 @@ function ProjectCard({
   index: number;
   onClick: () => void;
 }) {
-  const caseStudy = projectCaseStudyMap[project.slug];
-  const stats = caseStudy?.stats || {};
-  const industry = caseStudy?.industry || 'Technology';
-
   return (
     <motion.article
       initial={{ opacity: 0, y: 30 }}
@@ -99,41 +86,10 @@ function ProjectCard({
               Featured
             </span>
           )}
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
-            {industry}
-          </span>
           {project.projectDeliverableType && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/20 text-white backdrop-blur-sm">
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
               {project.projectDeliverableType.replace(/_/g, ' ')}
             </span>
-          )}
-        </div>
-
-        {/* Stats row – shown on hover or always? We'll show on hover for minimalism, or always. Let's show always. */}
-        <div className="absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-2 text-white/90">
-          {stats.products && (
-            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-              <ShoppingBag className="w-3 h-3" />
-              <span>{stats.products} products</span>
-            </div>
-          )}
-          {stats.orders && (
-            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-              <TrendingUp className="w-3 h-3" />
-              <span>{stats.orders} orders</span>
-            </div>
-          )}
-          {stats.users && (
-            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-              <Users className="w-3 h-3" />
-              <span>{stats.users} users</span>
-            </div>
-          )}
-          {stats.platform && (
-            <div className="flex items-center gap-1.5 text-xs bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
-              <Smartphone className="w-3 h-3" />
-              <span>{stats.platform}</span>
-            </div>
           )}
         </div>
       </div>
@@ -197,8 +153,6 @@ function ProjectModal({
   project: ProjectResponse;
   onClose: () => void;
 }) {
-  const caseStudy = projectCaseStudyMap[project.slug];
-  const stats = caseStudy?.stats || {};
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const bannerImages = project.bannerImages?.sort((a, b) => a.displayOrder - b.displayOrder) || [];
 
@@ -236,11 +190,10 @@ function ProjectModal({
           </button>
 
           <div className="p-6 md:p-8">
-            {/* Header */}
             <div className="mb-6">
-              {caseStudy?.industry && (
+              {project.projectBundle && (
                 <span className="inline-block text-xs font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/30 px-2 py-1 rounded mb-2">
-                  {caseStudy.industry}
+                  {project.projectBundle.projectBundleName}
                 </span>
               )}
               <h2 className="font-display text-3xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -250,34 +203,6 @@ function ProjectModal({
                 <p className="text-sm text-zinc-500 mt-1">
                   Deliverable: {project.projectDeliverableType.replace('_', ' ')}
                 </p>
-              )}
-            </div>
-
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              {stats.products && (
-                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
-                  <p className="text-2xl font-bold text-brand-600">{stats.products}</p>
-                  <p className="text-xs text-zinc-500">Products</p>
-                </div>
-              )}
-              {stats.orders && (
-                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
-                  <p className="text-2xl font-bold text-brand-600">{stats.orders}</p>
-                  <p className="text-xs text-zinc-500">Orders</p>
-                </div>
-              )}
-              {stats.users && (
-                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
-                  <p className="text-2xl font-bold text-brand-600">{stats.users}</p>
-                  <p className="text-xs text-zinc-500">Users</p>
-                </div>
-              )}
-              {stats.uptime && (
-                <div className="text-center p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800">
-                  <p className="text-2xl font-bold text-brand-600">{stats.uptime}</p>
-                  <p className="text-xs text-zinc-500">Uptime</p>
-                </div>
               )}
             </div>
 
@@ -320,29 +245,13 @@ function ProjectModal({
               {project.shortDescription}
             </p>
 
-            {/* Problem & Solution (if available) */}
-            {caseStudy?.problem && (
+            {/* Full description */}
+            {project.fullDescription && (
               <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">The Challenge</h4>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">{caseStudy.problem}</p>
-              </div>
-            )}
-            {caseStudy?.solution && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Our Solution</h4>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">{caseStudy.solution}</p>
-              </div>
-            )}
-
-            {/* Results */}
-            {caseStudy?.results && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Key Results</h4>
-                <ul className="list-disc list-inside text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
-                  {caseStudy.results.map((r: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined, i: Key | null | undefined) => (
-                    <li key={i}>{r}</li>
-                  ))}
-                </ul>
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Project Details</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                  {project.fullDescription}
+                </p>
               </div>
             )}
 
@@ -358,6 +267,26 @@ function ProjectModal({
                     >
                       {t.technology.name}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* External Links */}
+            {project.externalLinks && project.externalLinks.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Links</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {project.externalLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition"
+                    >
+                      {link.name || 'Link'}
+                    </a>
                   ))}
                 </div>
               </div>
