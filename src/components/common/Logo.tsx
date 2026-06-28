@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -21,7 +20,7 @@ export function Logo({
   }, []);
 
   const fallbackText = (
-    <div className="flex items-center gap-2">
+    <div className={cn('flex items-center gap-2', className)}>
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 shadow-md">
         <span className="text-sm font-bold text-white">BH</span>
       </div>
@@ -37,10 +36,7 @@ export function Logo({
   }
 
   return (
-    <Link
-      href="/"
-      className={cn('flex items-center', className)}
-    >
+    <div className={cn('flex items-center', className)}>
       {variant === 'full' ? (
         <Image
           src="/logo.svg"
@@ -51,15 +47,15 @@ export function Logo({
           priority
         />
       ) : (
-       <Image
-        src="/logo-icon.svg"
-        alt="BrizerHero"
-        width={48}
-        height={48}
-        className="h-10 w-10 object-contain"
-        priority
-      />
+        <Image
+          src="/logo-icon.svg"
+          alt="BrizerHero"
+          width={48}
+          height={48}
+          className="h-10 w-10 object-contain"
+          priority
+        />
       )}
-    </Link>
+    </div>
   );
 }

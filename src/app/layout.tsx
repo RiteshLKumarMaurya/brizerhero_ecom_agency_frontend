@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+// import Script from 'next/script';
 import { Inter } from 'next/font/google';
 
 import './globals.css';
@@ -16,30 +17,37 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#6366f1',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#050506' },
+  ],
+  colorScheme: 'dark light',
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://brizerhero.com'),
 
   title: {
-    default: 'BrizerHero — Website, App & Software Development Agency',
+    default:
+      'BrizerHero | Digital Transformation for Grocery Businesses',
     template: '%s | BrizerHero',
   },
 
   description:
-    'BrizerHero builds websites, Android apps, iOS apps, ecommerce solutions, admin panels, delivery apps, SaaS products and custom software for startups and businesses.',
+    'BrizerHero helps grocery businesses modernize with online ordering, mobile apps, inventory management, pickup & delivery systems, loyalty programs, and custom digital platforms.',
 
   keywords: [
-    'website development company',
-    'software development agency',
-    'mobile app development',
-    'android app development',
-    'ios app development',
-    'ecommerce development',
-    'saas development',
-    'custom software',
-    'startup software development',
+    'grocery software',
+    'grocery app development',
+    'grocery website development',
+    'grocery ordering system',
+    'online grocery platform',
+    'inventory management system',
+    'grocery delivery software',
+    'indian grocery software',
+    'grocery digital transformation',
+    'pickup and delivery system',
+    'admin dashboard',
     'BrizerHero',
   ],
 
@@ -56,13 +64,18 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
       'max-image-preview': 'large',
+      'max-video-preview': -1,
       'max-snippet': -1,
     },
+  },
+
+  alternates: {
+    canonical: '/',
   },
 
   icons: {
@@ -94,9 +107,13 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://brizerhero.com',
     siteName: 'BrizerHero',
-    title: 'BrizerHero — Website, App & Software Development Agency',
+
+    title:
+      'BrizerHero | Digital Transformation for Grocery Businesses',
+
     description:
-      'Premium software development agency building websites, mobile apps, ecommerce solutions and SaaS products.',
+      'Helping grocery businesses grow with premium online ordering, mobile apps, inventory systems, pickup & delivery, and custom digital solutions.',
+
     images: [
       {
         url: '/og-image.png',
@@ -109,15 +126,140 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'BrizerHero — Website, App & Software Development Agency',
+
+    title:
+      'BrizerHero | Digital Transformation for Grocery Businesses',
+
     description:
-      'Premium software development agency building websites, mobile apps, ecommerce solutions and SaaS products.',
+      'Premium digital systems built exclusively for grocery businesses.',
+
     images: ['/og-image.png'],
   },
 
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
+
+  
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+
+  '@graph': [
+    {
+      '@type': 'Organization',
+
+      '@id': 'https://brizerhero.com/#organization',
+
+      name: 'BrizerHero',
+
+      url: 'https://brizerhero.com',
+
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://brizerhero.com/logo.png',
+      },
+
+      image: 'https://brizerhero.com/og-image.png',
+
+      description:
+        'BrizerHero helps grocery businesses modernize with online ordering, mobile apps, inventory management, pickup & delivery systems, loyalty programs, and custom digital platforms.',
+
+      email: 'brizerhero@gmail.com',
+
+      telephone: '+918651600737',
+
+      foundingLocation: {
+        '@type': 'Place',
+        name: 'Bihar, India',
+      },
+
+      areaServed: [
+        {
+          '@type': 'Country',
+          name: 'United States',
+        },
+        {
+          '@type': 'Country',
+          name: 'Canada',
+        },
+        {
+          '@type': 'Country',
+          name: 'Australia',
+        },
+      ],
+
+      contactPoint: [
+        {
+          '@type': 'ContactPoint',
+          contactType: 'Sales',
+
+          email: 'brizerhero@gmail.com',
+
+          telephone: '+918651600737',
+
+          availableLanguage: [
+            'English',
+            'Hindi',
+          ],
+        },
+      ],
+
+      sameAs: [
+        'https://www.linkedin.com/in/ritesh-kumar-46550a292',
+        'https://www.instagram.com/brizerhero.com_agency',
+      ],
+    },
+
+    {
+      '@type': 'WebSite',
+
+      '@id': 'https://brizerhero.com/#website',
+
+      url: 'https://brizerhero.com',
+
+      name: 'BrizerHero',
+
+      publisher: {
+        '@id': 'https://brizerhero.com/#organization',
+      },
+
+      inLanguage: 'en-US',
+    },
+
+    {
+      '@type': 'ProfessionalService',
+
+      '@id': 'https://brizerhero.com/#service',
+
+      name: 'BrizerHero',
+
+      url: 'https://brizerhero.com',
+
+      description:
+        'Premium digital transformation services built exclusively for grocery businesses.',
+
+      provider: {
+        '@id': 'https://brizerhero.com/#organization',
+      },
+
+      serviceType: [
+        'Grocery Website Development',
+        'Online Grocery Ordering',
+        'Inventory Management System',
+        'Pickup & Delivery Platform',
+        'Customer Mobile App',
+        'Admin Dashboard',
+      ],
+
+      areaServed: [
+        'United States',
+        'Canada',
+        'Australia',
+      ],
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -125,71 +267,51 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-
-    name: 'BrizerHero',
-
-    url: 'https://brizerhero.com',
-
-    logo: 'https://brizerhero.com/logo.png',
-
-    description:
-      'BrizerHero builds websites, mobile apps, ecommerce platforms, SaaS products and custom software.',
-
-    email: 'brizerhero@gmail.com',
-
-    telephone: '+918651600737',
-
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Buxar',
-      addressRegion: 'Bihar',
-      addressCountry: 'IN',
-    },
-
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'customer support',
-      availableLanguage: ['English', 'Hindi'],
-    },
-
-    sameAs: [],
-  };
-
   return (
     <html
       lang="en"
-      className={inter.variable}
       suppressHydrationWarning
+      className={inter.variable}
     >
       <head>
+
+       
         <meta
           name="apple-mobile-web-app-title"
           content="BrizerHero"
         />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema),
-          }}
+        <meta
+          name="format-detection"
+          content="telephone=no"
         />
+
+{
+        
+        }
+
       </head>
 
-      <body className="min-h-screen bg-white dark:bg-zinc-950 antialiased">
+      <body className="min-h-screen bg-surface text-primary antialiased">
+
+        
+
         <Providers>
+
           <NavbarWrapper />
 
-          <main className="pt-16 md:pt-18">
+          <main
+            id="main-content"
+            className="min-h-screen pt-16 md:pt-20"
+          >
             {children}
           </main>
 
           <Footer />
+
         </Providers>
+
       </body>
     </html>
   );
 }
-

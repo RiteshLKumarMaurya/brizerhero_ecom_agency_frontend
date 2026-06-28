@@ -1,12 +1,15 @@
+// app/services/page.tsx  (Server Component — do not add 'use client')
 import type { Metadata } from 'next';
 import { ServicesPageClient } from './ServicesPageClient';
 
 export const metadata: Metadata = {
-  title: 'Services — Website, App & Software Development',
-  description: 'Explore our full range of development services: websites, mobile apps, ecommerce, custom software, AI solutions, and more.',
+  title: 'Business Solutions — Software for Food & Grocery Businesses',
+  description:
+    'BrizerHero builds software for Indian grocery stores, bakeries, dairy businesses, organic food retailers, and produce markets. Online ordering, inventory management, delivery tracking, and more.',
   openGraph: {
-    title: 'Services — BrizerHero',
-    description: 'Premium software development services for startups and businesses.',
+    title: 'Business Solutions — BrizerHero',
+    description:
+      'Software built specifically for food businesses. Not generic tools — systems that match how your store actually operates.',
   },
 };
 

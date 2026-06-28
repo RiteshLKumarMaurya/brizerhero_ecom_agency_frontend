@@ -35,11 +35,11 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
 
 export function ClientResults() {
   return (
-    <section className="py-16 bg-zinc-950 border-t border-zinc-800">
+    <section className="py-16 bg-surface border-t border-default">
       <div className="section-container">
         <div className="text-center mb-10">
           <span className="text-xs font-semibold tracking-widest text-brand-400 uppercase">Client Results</span>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-white mt-2">Trusted by Growing Businesses</h2>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-primary mt-2">Trusted by Growing Businesses</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
           {metrics.map((metric, i) => (
@@ -49,12 +49,12 @@ export function ClientResults() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
+              className="text-center p-4 rounded-xl bg-card backdrop-blur-sm border border-default"
             >
               <div className="text-3xl font-bold text-brand-400">
                 <Counter target={metric.value} suffix={metric.suffix} />
               </div>
-              <p className="text-xs text-zinc-400 mt-1">{metric.label}</p>
+              <p className="text-xs text-muted mt-1">{metric.label}</p>
             </motion.div>
           ))}
         </div>

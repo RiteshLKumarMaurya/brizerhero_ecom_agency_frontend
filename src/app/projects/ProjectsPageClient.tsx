@@ -11,34 +11,35 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  X,
-  Calendar,
-  Layers,
+  Store,
+  TrendingUp,
 } from 'lucide-react';
 import { useProjects } from '@/hooks/useApi';
-import { getOptimizedUrl, getThumbUrl } from '@/lib/cdn';
+import { getThumbUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
 import type { ProjectResponse } from '@/types';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/lib/utils';
 
-// ─── Skeleton ──────────────────────────────────────────────────────────────
+// ─── Industry label map (business language) ────────────────────────────
+const INDUSTRY_LABELS: Record<string, { label: string; color: string }> = {
+  GROCERY:      { label: 'Indian Grocery',   color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
+  ORGANIC:      { label: 'Organic Foods',    color: 'bg-lime-50 text-lime-700 dark:bg-lime-950/50 dark:text-lime-300 border-lime-200 dark:border-lime-800' },
+  BAKERY:       { label: 'Bakery',           color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800' },
+  DAIRY:        { label: 'Dairy Business',   color: 'bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border-sky-200 dark:border-sky-800' },
+  PRODUCE:      { label: 'Produce Market',   color: 'bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300 border-orange-200 dark:border-orange-800' },
+};
+
+// ─── Skeleton ──────────────────────────────────────────────────────────
 function ProjectCardSkeleton() {
   return (
-    <div className="rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col h-full animate-pulse">
-      <div className="aspect-video bg-zinc-200 dark:bg-zinc-800" />
-      <div className="p-5 space-y-3">
-        <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/3" />
-        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
-        <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded" />
-          <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded" />
-        </div>
-        <div className="flex gap-2 pt-2">
-          <div className="h-6 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
-          <div className="h-6 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
-        </div>
+    <div className="rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex flex-col animate-pulse" style={{ height: '540px' }}>
+      <div className="h-64 bg-zinc-100 dark:bg-zinc-800 flex-shrink-0" />
+      <div className="p-8 flex flex-col gap-4 flex-1">
+        <div className="h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full w-24" />
+        <div className="h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl w-3/4" />
+        <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-full" />
+        <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-5/6" />
+        <div className="mt-auto h-10 bg-zinc-100 dark:bg-zinc-800 rounded-xl w-40" />
       </div>
     </div>
   );
@@ -48,265 +49,101 @@ function ProjectCardSkeleton() {
 function ProjectCard({
   project,
   index,
-  onClick,
 }: {
   project: ProjectResponse;
   index: number;
-  onClick: () => void;
 }) {
+  const bundleName = project.projectBundle?.projectBundleName ?? '';
+  const industryKey = bundleName.toUpperCase().split(' ')[0];
+  const industry = INDUSTRY_LABELS[industryKey];
+
   return (
     <motion.article
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: (index % 9) * 0.06, duration: 0.5, ease: 'easeOut' }}
-      whileHover={{ y: -6 }}
-      onClick={onClick}
-      className="group cursor-pointer rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:border-brand-400/50"
+      transition={{ delay: (index % 9) * 0.07, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative rounded-3xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex flex-col transition-all duration-500 hover:shadow-[0_24px_60px_-12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_24px_60px_-12px_rgba(0,0,0,0.5)] hover:-translate-y-1 hover:border-zinc-200 dark:hover:border-zinc-700"
+      style={{ minHeight: '540px' }}
     >
-      {/* Thumbnail Banner */}
-      <div className="relative overflow-hidden aspect-video bg-gradient-to-br from-brand-500/20 to-purple-500/20">
+      {/* Image container */}
+      <div className="relative h-64 flex-shrink-0 overflow-hidden bg-zinc-50 dark:bg-zinc-800">
         {project.thumbImage ? (
           <Image
             src={getThumbUrl(project.thumbImage)}
             alt={project.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-brand-900/30 to-purple-900/20" />
+          <div className="w-full h-full bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center">
+            <Store className="w-12 h-12 text-zinc-300 dark:text-zinc-600" />
+          </div>
         )}
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-          {project.featured && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-400/90 text-amber-950 backdrop-blur-sm">
-              Featured
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+        {/* Featured badge */}
+        {project.featured && (
+          <div className="absolute top-4 left-4">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-100 backdrop-blur-sm border border-white/50 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              Featured Project
             </span>
-          )}
-          {project.projectDeliverableType && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
-              {project.projectDeliverableType.replace(/_/g, ' ')}
-            </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="p-5 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          {project.projectBundle && (
-            <span className="text-xs font-medium text-brand-600 dark:text-brand-400">
-              {project.projectBundle.projectBundleName}
-            </span>
-          )}
-          {project.createdAt && (
-            <span className="text-xs text-zinc-400 whitespace-nowrap">
-              {formatDate(project.createdAt)}
-            </span>
-          )}
-        </div>
+      {/* Card body */}
+      <div className="p-8 flex flex-col flex-1">
+        {/* Industry chip */}
+        {industry ? (
+          <span className={cn(
+            'self-start text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded-full border mb-4',
+            industry.color
+          )}>
+            {industry.label}
+          </span>
+        ) : bundleName ? (
+          <span className="self-start text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded-full border mb-4 bg-zinc-50 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700">
+            {bundleName}
+          </span>
+        ) : null}
 
-        <h3 className="font-display font-bold text-xl text-zinc-900 dark:text-zinc-100 mb-2 group-hover:text-brand-600 transition-colors">
+        {/* Title */}
+        <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-3 leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors duration-300">
           {project.title}
         </h3>
 
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed flex-1 mb-4 line-clamp-2">
+        {/* Short description */}
+        <p className="text-[15px] text-zinc-500 dark:text-zinc-400 leading-relaxed flex-1 line-clamp-3 mb-6">
           {project.shortDescription}
         </p>
 
-        {/* Technology stack pills */}
-        {project.technologies?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {project.technologies.slice(0, 4).map((t) => (
-              <span
-                key={t.id}
-                className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-              >
-                {t.technology.name}
-              </span>
-            ))}
-            {project.technologies.length > 4 && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
-                +{project.technologies.length - 4}
-              </span>
-            )}
-          </div>
+        {/* Platform / deliverable type */}
+        {project.projectDeliverableType && (
+          <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-6">
+            {project.projectDeliverableType.replace(/_/g, ' ')}
+          </p>
         )}
 
         {/* CTA */}
-        <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 group-hover:gap-3 transition-all">
-          View Case Study <ArrowRight className="w-3.5 h-3.5" />
-        </div>
+        <Link
+          href={`/projects/${project.slug ?? project.id}`}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100 group/link"
+          aria-label={`View case study for ${project.title}`}
+        >
+          <span className="underline underline-offset-4 decoration-zinc-300 dark:decoration-zinc-600 group-hover/link:decoration-brand-500 dark:group-hover/link:decoration-brand-400 transition-all">
+            Read case study
+          </span>
+          <ArrowRight
+            className="w-4 h-4 text-brand-500 transition-transform duration-300 group-hover/link:translate-x-1"
+            aria-hidden="true"
+          />
+        </Link>
       </div>
     </motion.article>
-  );
-}
-
-// ─── Modal (Quick Preview) ─────────────────────────────────────────────
-function ProjectModal({
-  project,
-  onClose,
-}: {
-  project: ProjectResponse;
-  onClose: () => void;
-}) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const bannerImages = project.bannerImages?.sort((a, b) => a.displayOrder - b.displayOrder) || [];
-
-  const nextImage = () => {
-    if (bannerImages.length === 0) return;
-    setCurrentImageIndex((prev) => (prev + 1) % bannerImages.length);
-  };
-  const prevImage = () => {
-    if (bannerImages.length === 0) return;
-    setCurrentImageIndex((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
-  };
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25 }}
-          className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="p-6 md:p-8">
-            <div className="mb-6">
-              {project.projectBundle && (
-                <span className="inline-block text-xs font-semibold text-brand-600 bg-brand-50 dark:bg-brand-950/30 px-2 py-1 rounded mb-2">
-                  {project.projectBundle.projectBundleName}
-                </span>
-              )}
-              <h2 className="font-display text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                {project.title}
-              </h2>
-              {project.projectDeliverableType && (
-                <p className="text-sm text-zinc-500 mt-1">
-                  Deliverable: {project.projectDeliverableType.replace('_', ' ')}
-                </p>
-              )}
-            </div>
-
-            {/* Gallery Carousel */}
-            {bannerImages.length > 0 && (
-              <div className="mb-6">
-                <div className="relative rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                  <div className="aspect-video relative">
-                    {bannerImages[currentImageIndex]?.media?.optimizedKey && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={getOptimizedUrl(bannerImages[currentImageIndex].media)}
-                        alt={`${project.title} screenshot`}
-                        className="w-full h-full object-contain"
-                      />
-                    )}
-                  </div>
-                  {bannerImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Short description */}
-            <p className="text-zinc-600 dark:text-zinc-300 mb-4 leading-relaxed">
-              {project.shortDescription}
-            </p>
-
-            {/* Full description */}
-            {project.fullDescription && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Project Details</h4>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
-                  {project.fullDescription}
-                </p>
-              </div>
-            )}
-
-            {/* Tech stack */}
-            {project.technologies?.length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Technologies</h4>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {project.technologies.map((t) => (
-                    <span
-                      key={t.id}
-                      className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-                    >
-                      {t.technology.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* External Links */}
-            {project.externalLinks && project.externalLinks.length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Links</h4>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {project.externalLinks.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition"
-                    >
-                      {link.name || 'Link'}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Footer with link to full case study */}
-            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 flex justify-between items-center">
-              <Link
-                href={`/projects/${project.slug}`}
-                className="text-brand-600 hover:underline text-sm flex items-center gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Read full case study <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <span className="text-xs text-zinc-400">Project ID: {project.id}</span>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
   );
 }
 
@@ -316,7 +153,6 @@ export function ProjectsPageClient() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectResponse | null>(null);
 
   useEffect(() => {
     const initial = Number(searchParams.get('page')) || 0;
@@ -324,17 +160,28 @@ export function ProjectsPageClient() {
     setIsHydrated(true);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!isHydrated) return;
-    const params = new URLSearchParams(searchParams);
-    if (page === 0) {
-      params.delete('page');
-    } else {
-      params.set('page', page.toString());
-    }
-    const newUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
+useEffect(() => {
+  if (!isHydrated) return;
+
+  const params = new URLSearchParams(searchParams.toString());
+
+  if (page === 0) {
+    params.delete('page');
+  } else {
+    params.set('page', page.toString());
+  }
+
+  const newUrl =
+    `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+
+  // Don't navigate if URL is already correct
+  if (
+    newUrl !==
+    `${window.location.pathname}${window.location.search}`
+  ) {
     router.replace(newUrl, { scroll: false });
-  }, [page, router, searchParams, isHydrated]);
+  }
+}, [page, isHydrated]);
 
   const { data, isLoading, error, refetch } = useProjects(page, 9);
 
@@ -348,13 +195,20 @@ export function ProjectsPageClient() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="font-display text-2xl font-bold mb-2">Failed to load projects</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-6">
-            {error.message || 'Something went wrong. Please try again.'}
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-red-400" aria-hidden="true" />
+          </div>
+          <h2 className="font-display text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+            Something went wrong
+          </h2>
+          <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-[15px]">
+            {error.message || 'Unable to load projects right now. Please try again.'}
           </p>
-          <button onClick={() => refetch()} className="btn-primary">
-            Try Again
+          <button
+            onClick={() => refetch()}
+            className="btn-primary"
+          >
+            Try again
           </button>
         </div>
       </div>
@@ -363,39 +217,85 @@ export function ProjectsPageClient() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="pt-32 pb-16 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
+      {/* ─── Hero ─────────────────────────────────────────────────────── */}
+      <section
+        className="pt-24 pb-24 bg-white dark:bg-zinc-950"
+        aria-label="Page introduction"
+      >
         <div className="section-container">
-          <div className="max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl"
+          >
+            {/* Eyebrow */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="eyebrow"
+              className="text-xs font-semibold tracking-[0.18em] uppercase text-brand-600 dark:text-brand-400 mb-5"
             >
-              Case Studies
+              Our Work
             </motion.p>
+
+            {/* Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mb-5"
+              transition={{ delay: 0.08 }}
+              className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-zinc-900 dark:text-zinc-50 leading-[1.05] tracking-tight mb-7"
             >
-              Ecommerce Solutions That <span className="gradient-text">Ship and Scale</span>
+              Software built for{' '}
+              <span className="text-brand-600 dark:text-brand-400">
+                food businesses
+              </span>{' '}
+              like yours.
             </motion.h1>
+
+            {/* Sub-copy */}
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed"
+              transition={{ delay: 0.16 }}
+              className="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl"
             >
-              Every project is a complete ecosystem built for real business growth. Browse our case studies to see how we transform ideas into thriving ecommerce platforms.
+              Every case study below is a real business that faced a real challenge.
+              Grocery stores, bakeries, dairy brands, and produce markets — we build
+              software that fits how you work, not the other way around.
             </motion.p>
-          </div>
+          </motion.div>
+
+          {/* Industry trust bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+            className="flex flex-wrap gap-3 mt-12"
+            aria-label="Industries we serve"
+          >
+            {Object.values(INDUSTRY_LABELS).map(({ label, color }) => (
+              <span
+                key={label}
+                className={cn(
+                  'text-xs font-semibold px-4 py-2 rounded-full border',
+                  color
+                )}
+              >
+                {label}
+              </span>
+            ))}
+          </motion.div>
         </div>
       </section>
 
-      {/* Projects Grid */}
-      <section className="section-padding">
+      {/* ─── Divider ─────────────────────────────────────────────────── */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800" />
+
+      {/* ─── Projects Grid ────────────────────────────────────────────── */}
+      <section
+        className="py-24 bg-zinc-50 dark:bg-zinc-950"
+        aria-label="Case studies"
+      >
         <div className="section-container">
           <AnimatePresence mode="wait">
             {isLoading ? (
@@ -404,13 +304,13 @@ export function ProjectsPageClient() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                aria-busy="true"
+                aria-label="Loading projects"
               >
-                {Array(9)
-                  .fill(0)
-                  .map((_, i) => (
-                    <ProjectCardSkeleton key={i} />
-                  ))}
+                {Array(9).fill(0).map((_, i) => (
+                  <ProjectCardSkeleton key={i} />
+                ))}
               </motion.div>
             ) : (
               <motion.div
@@ -418,40 +318,46 @@ export function ProjectsPageClient() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               >
                 {projects.map((project: ProjectResponse, i: number) => (
                   <ProjectCard
                     key={project.id}
                     project={project}
                     index={i}
-                    onClick={() => setSelectedProject(project)}
                   />
                 ))}
               </motion.div>
             )}
           </AnimatePresence>
 
+          {/* Empty state */}
           {!isLoading && projects.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-zinc-500">No projects found. Check back soon!</p>
+            <div className="text-center py-24">
+              <TrendingUp className="w-10 h-10 text-zinc-300 dark:text-zinc-700 mx-auto mb-4" aria-hidden="true" />
+              <p className="text-zinc-400 text-lg">More case studies coming soon.</p>
             </div>
           )}
 
-          {/* Pagination */}
+          {/* ─── Pagination ──────────────────────────────────────────── */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-12">
+            <nav
+              className="flex items-center justify-center gap-2 mt-16"
+              aria-label="Project pages"
+            >
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={isFirst}
+                aria-label="Previous page"
                 className={cn(
-                  'btn-secondary p-2.5 rounded-full transition-all',
-                  isFirst && 'opacity-40 cursor-not-allowed'
+                  'w-10 h-10 rounded-full border flex items-center justify-center transition-all text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500',
+                  isFirst && 'opacity-30 cursor-not-allowed pointer-events-none'
                 )}
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               </button>
-              <div className="flex gap-1">
+
+              <div className="flex gap-1" role="list">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum: number;
                   if (totalPages <= 5) {
@@ -463,15 +369,19 @@ export function ProjectsPageClient() {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
+                  const isActive = pageNum === currentPage;
                   return (
                     <button
                       key={pageNum}
+                      role="listitem"
                       onClick={() => setPage(pageNum)}
+                      aria-label={`Page ${pageNum + 1}`}
+                      aria-current={isActive ? 'page' : undefined}
                       className={cn(
-                        'w-9 h-9 rounded-full text-sm font-medium transition-all',
-                        pageNum === currentPage
-                          ? 'bg-brand-600 text-white shadow-md'
-                          : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                        'w-10 h-10 rounded-full text-sm font-medium transition-all',
+                        isActive
+                          ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                          : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                       )}
                     >
                       {pageNum + 1}
@@ -479,32 +389,24 @@ export function ProjectsPageClient() {
                   );
                 })}
               </div>
+
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={isLast}
+                aria-label="Next page"
                 className={cn(
-                  'btn-secondary p-2.5 rounded-full transition-all',
-                  isLast && 'opacity-40 cursor-not-allowed'
+                  'w-10 h-10 rounded-full border flex items-center justify-center transition-all text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500',
+                  isLast && 'opacity-30 cursor-not-allowed pointer-events-none'
                 )}
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </button>
-            </div>
+            </nav>
           )}
         </div>
       </section>
 
       <ContactCta />
-
-      {/* Modal */}
-      <AnimatePresence>
-        {selectedProject && (
-          <ProjectModal
-            project={selectedProject}
-            onClose={() => setSelectedProject(null)}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 }

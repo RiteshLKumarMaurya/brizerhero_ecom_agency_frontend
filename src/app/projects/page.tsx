@@ -1,22 +1,34 @@
+// app/projects/page.tsx  (Server Component — do not add 'use client')
 import type { Metadata } from 'next';
-import { ProjectsPageClient } from './ProjectsPageClient';
 import { Suspense } from 'react';
-
+import { ProjectsPageClient } from './ProjectsPageClient';
 
 export const metadata: Metadata = {
-  title: 'Projects — Our Work & Portfolio',
-  description: 'Browse our portfolio of websites, mobile apps, ecommerce stores, and custom software. Real projects, real results.',
+  title: 'Case Studies — Software Built for Food & Grocery Businesses',
+  description:
+    'Browse real case studies from BrizerHero. We build software exclusively for Indian grocery stores, organic food retailers, bakeries, dairy businesses, and produce markets.',
   openGraph: {
-    title: 'Projects — BrizerHero Portfolio',
-    description: 'See the digital products we\'ve built for clients worldwide.',
+    title: 'Case Studies — BrizerHero',
+    description:
+    "See the platforms we've built for grocery stores, bakeries, dairy brands, and produce markets across India."
+    ,
   },
 };
 
-// app/projects/page.tsx (Server Component)
+function ProjectsLoadingFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-zinc-400">Loading case studies…</p>
+      </div>
+    </div>
+  );
+}
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={<div className="text-center py-8">Loading projects...</div>}>
+    <Suspense fallback={<ProjectsLoadingFallback />}>
       <ProjectsPageClient />
     </Suspense>
   );

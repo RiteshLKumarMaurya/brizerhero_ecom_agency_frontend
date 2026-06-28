@@ -9,20 +9,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Brand scale now mirrors the emerald tokens in globals.css instead
+        // of the old indigo (#6366f1) leftover from the previous SaaS palette.
+        // 500/600 are the two shades actually used for active states, links,
+        // and icons across Navbar/Footer — kept in lockstep with
+        // --color-primary / --color-primary-hover so there is one brand
+        // color, not two.
         brand: {
-          50: '#f0f4ff',
-          100: '#e0eaff',
-          200: '#c7d7fe',
-          300: '#a5bafd',
-          400: '#8093fb',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#2DD4BF',
+          500: '#14B8A6',  // --color-primary-hover
+          600: '#0F766E',  // --color-primary
+          700: '#115E59',
+          800: '#134E4A',
+          900: '#0F3F3B',
+          950: '#062E2B',
         },
+        // Object-style palette kept for any existing accent.cyan/violet/etc
+        // usages elsewhere in the codebase — DEFAULT/soft added so
+        // `accent` and `accent-soft` resolve to the same gold tokens as
+        // --color-accent / --color-accent-soft, without removing the
+        // named sub-keys other components may still reference.
         accent: {
+          DEFAULT: '#D4AF37',
+          soft: '#F0D78C',
           cyan: '#06b6d4',
           violet: '#8b5cf6',
           emerald: '#10b981',
@@ -37,6 +50,15 @@ module.exports = {
           border: '#e4e4e7',
           'border-dark': '#27272a',
         },
+        // Var-backed tokens — these read live from globals.css custom
+        // properties, so bg-card / bg-card-hover / border-glow flip
+        // automatically with the .dark class, the same way bg-surface
+        // and text-primary already do via @layer utilities.
+        card: {
+          DEFAULT: 'var(--color-card)',
+          hover: 'var(--color-card-hover)',
+        },
+        'border-glow': 'var(--color-border-glow)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
@@ -48,7 +70,7 @@ module.exports = {
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
         'hero-gradient': 'linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 70%, #0c4a6e 100%)',
         'card-gradient': 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-        'glow-brand': 'radial-gradient(ellipse at center, rgba(99,102,241,0.15) 0%, transparent 70%)',
+        'glow-brand': 'radial-gradient(ellipse at center, rgba(15,118,110,0.15) 0%, transparent 70%)',
       },
       boxShadow: {
         'glow-sm': '0 0 20px rgba(99,102,241,0.15)',

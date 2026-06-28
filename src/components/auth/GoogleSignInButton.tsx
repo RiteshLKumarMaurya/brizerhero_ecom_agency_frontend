@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
+// import Script from 'next/script';
 import { Loader2 } from 'lucide-react';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 
@@ -23,11 +23,7 @@ export function GoogleSignInButton({ redirectTo = '/' }: GoogleSignInButtonProps
 
   return (
     <>
-      <Script
-        src="https://accounts.google.com/gsi/client"
-        strategy="afterInteractive"
-        onLoad={() => setScriptLoaded(true)}
-      />
+     
 
       <div className="w-full">
         {loading && (

@@ -31,6 +31,9 @@ import { getOptimizedUrl, getThumbUrl } from '@/lib/cdn';
 import { TestimonialCardSkeleton } from '@/components/common/Skeletons';
 import { ContactCta } from '@/components/sections/ContactCta';
 import { TestimonialMetadata, testimonialMetadataMap } from '@/lib/testimonialMetadata';
+type TestimonialMetadataWithProjectType = TestimonialMetadata & {
+  projectType?: string;
+};
 import type { TestimonialResponse } from '@/types';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -42,7 +45,7 @@ function FeaturedStory({
   metadata,
 }: {
   testimonial: TestimonialResponse;
-  metadata: TestimonialMetadata | null;
+  metadata: TestimonialMetadataWithProjectType | null;
 }) {
   const services = metadata?.services || ['Ecommerce Solution'];
   const result = metadata?.result || 'Business Growth';
@@ -673,7 +676,7 @@ export function TestimonialsPageClient() {
   return (
     <>
       {/* ─── Hero Section ────────────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-16 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
+      <section className="relative pt-24 pb-16 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
         <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
 

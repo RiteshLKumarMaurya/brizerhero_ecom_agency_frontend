@@ -5,547 +5,584 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Code,
-  Rocket,
-  Check,
-  X,
-  ArrowRight,
-  Search,
-  ChevronDown,
-  ChevronUp,
-  Star,
-  Zap,
-  Clock,
-  Users,
-  Settings,
-  Shield,
-  TrendingUp,
-  ShoppingCart,
-  Package,
-  Truck,
-  CreditCard,
-  BarChart3,
-  Smartphone,
-  LayoutDashboard,
+  ArrowRight, Check, X, ChevronDown, ChevronUp,
+  Store, Leaf, Wheat, Milk, Package, Truck,
+  ShoppingCart, BarChart3, CreditCard, Smartphone,
+  LayoutDashboard, Settings, Users, Shield, Clock, Star,
 } from 'lucide-react';
 import { usePackages } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { formatPrice, cn } from '@/lib/utils';
 import { ContactCta } from '@/components/sections/ContactCta';
-import type { PackageResponse, PackageServiceResponse, CurrencyCode } from '@/types';
+import type { PackageResponse, CurrencyCode } from '@/types';
 
-// ─── Skeleton ──────────────────────────────────────────────────────────────
-function PackageCardSkeleton() {
+// ─── Animation preset ─────────────────────────────────────────────────────────
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] },
+});
+
+// ─── Skeleton ──────────────────────────────────────────────────────────────────
+// Wrapped in the same pt-5 padding-top used by the card wrapper so skeletons
+// align with real cards even though real cards reserve space for the badge.
+function PackageSkeleton() {
   return (
-    <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm animate-pulse">
-      <div className="aspect-[16/9] bg-zinc-200 dark:bg-zinc-800" />
-      <div className="p-6 space-y-4">
-        <div className="skeleton h-6 w-3/4 rounded" />
-        <div className="skeleton h-4 w-1/3 rounded" />
-        <div className="skeleton h-4 w-full rounded" />
-        <div className="skeleton h-4 w-5/6 rounded" />
-        <div className="flex gap-2">
-          <div className="skeleton h-6 w-16 rounded-full" />
-          <div className="skeleton h-6 w-16 rounded-full" />
-        </div>
-        <div className="skeleton h-10 w-full rounded-lg" />
+    <div className="pt-5">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7 animate-pulse space-y-4 h-full">
+        <div className="h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-7 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-4 w-1/3 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-4 w-4/5 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="flex-1" />
+        <div className="h-11 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800" />
       </div>
     </div>
   );
 }
 
-// ─── Package Card ──────────────────────────────────────────────────────────
+// ─── Package Card ─────────────────────────────────────────────────────────────
+//
+// Height uniformity strategy:
+//  • Every card wrapper gets pt-5 so the badge floats in that reserved space
+//    without pushing card content down — all three cards share the same top offset.
+//  • The inner article uses flex-col + h-full so it always fills the grid row.
+//  • Feature list is capped at 5 items with line-clamp-1 per item.
+//  • A flex-1 spacer between the feature list and the CTA button pushes the
+//    button to the bottom regardless of how many features exist.
+//
 function PackageCard({ pkg, index, featured }: { pkg: PackageResponse; index: number; featured?: boolean }) {
-  const [imageError, setImageError] = useState(false);
-  const services = pkg.services || [];
-  const isFeatured = featured || (index === 1);
-
+  const [imgError, setImgError] = useState(false);
   const iconSrc = pkg.iconImage ? getOptimizedUrl(pkg.iconImage) : null;
-
-  // Get service names for highlights
-  const serviceNames = services.map(s => s.serviceResponse?.name).filter(Boolean) as string[];
-  const highlights = serviceNames.slice(0, 6);
-  const hasMore = serviceNames.length > 6;
+  const allServices = pkg.services || [];
+  const highlights = allServices.slice(0, 5);
+  const extraCount = allServices.length - highlights.length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-30px' }}
-      transition={{ delay: index * 0.08, duration: 0.5, ease: 'easeOut' }}
-      whileHover={{ y: -6 }}
-      className={cn(
-        'group relative rounded-2xl bg-white dark:bg-zinc-900 border overflow-hidden shadow-sm transition-all duration-300 flex flex-col h-full',
-        isFeatured
-          ? 'border-brand-400 dark:border-brand-600 shadow-brand-500/20 shadow-xl scale-[1.02] md:scale-[1.05] z-10'
-          : 'border-zinc-200 dark:border-zinc-800 hover:shadow-md'
-      )}
-    >
-      {/* Glow effect for featured */}
-      {isFeatured && (
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 to-purple-500/10 pointer-events-none" />
-      )}
-
-      {/* Thumbnail Banner */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-brand-600 to-purple-600 flex-shrink-0">
-        {iconSrc && !imageError ? (
-          <img
-            src={iconSrc}
-            alt={pkg.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-16 h-16 text-white/30" />
+    // pt-5 reserves badge space for ALL cards — featured or not — so the row stays flush.
+    <div className="pt-5 h-full">
+      <motion.article
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: index * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className={cn(
+          // h-full makes the card stretch to the grid row height set by the tallest sibling.
+          'relative h-full flex flex-col rounded-2xl transition-all duration-200 group',
+          featured
+            ? [
+                'bg-white dark:bg-zinc-900',
+                'border border-emerald-300/70 dark:border-emerald-700/50',
+                'shadow-[0_4px_24px_-4px_rgba(16,185,129,0.12),0_1px_4px_-1px_rgba(0,0,0,0.06)]',
+                'dark:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.08)]',
+                'hover:-translate-y-1 hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.18),0_2px_8px_-2px_rgba(0,0,0,0.08)]',
+              ].join(' ')
+            : [
+                'bg-white dark:bg-zinc-900',
+                'border border-zinc-200 dark:border-zinc-800',
+                'shadow-sm',
+                'hover:-translate-y-1 hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700',
+              ].join(' '),
+        )}
+        aria-label={`Package: ${pkg.name}`}
+      >
+        {/* Badge — absolutely positioned so it floats into the pt-5 gap above the card */}
+        {featured && (
+          <div className="absolute -top-[18px] left-6 z-10" aria-label="Most popular package">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.14em] uppercase text-emerald-700 dark:text-emerald-300 bg-white dark:bg-zinc-900 border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 rounded-full shadow-sm">
+              <Star className="w-2.5 h-2.5 fill-current" aria-hidden /> Most popular
+            </span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-          {isFeatured && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/90 text-amber-950 text-xs font-bold backdrop-blur-sm">
-              <Star className="w-3 h-3 fill-current" /> Best Value
-            </span>
-          )}
-          {pkg.featured && !isFeatured && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand-500/90 text-white text-xs font-medium backdrop-blur-sm">
-              <Zap className="w-3 h-3" /> Popular
-            </span>
-          )}
-        </div>
-      </div>
+        {/* Thin accent line at top for featured — purely visual, zero height cost */}
+        {featured && (
+          <div className="h-[2px] w-full rounded-t-2xl bg-gradient-to-r from-emerald-400/0 via-emerald-400/70 to-emerald-400/0" aria-hidden />
+        )}
 
-      {/* Content */}
-      <div className="flex-1 p-6 flex flex-col">
-        <div className="flex justify-between items-start gap-2 mb-1">
-          <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            {pkg.name}
-          </h3>
-        </div>
-        <div className="flex items-baseline gap-0.5 mb-3">
-          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-            {formatPrice(pkg.price, pkg.currencyCode as CurrencyCode)}
-          </span>
-          <span className="text-xs text-zinc-400">one‑time</span>
-        </div>
-
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-2">
-          {pkg.shortDescription}
-        </p>
-
-        {serviceNames.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
-              Package Highlights
+        {/* Image — fixed aspect ratio so it never affects height variation */}
+        <div className={cn(
+          'relative overflow-hidden flex-shrink-0',
+          featured ? 'rounded-t-[calc(1rem-1px)]' : 'rounded-t-2xl',
+        )}>
+          {iconSrc && !imgError ? (
+            <div className="aspect-[16/7] bg-zinc-100 dark:bg-zinc-800">
+              <img
+                src={iconSrc}
+                alt={pkg.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                onError={() => setImgError(true)}
+                loading="lazy"
+              />
             </div>
-            <ul className="space-y-1.5">
-              {highlights.slice(0, 6).map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                  <Check className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
-                  <span>{item}</span>
+          ) : (
+            <div className="aspect-[16/7] bg-zinc-50 dark:bg-zinc-800/80 flex items-center justify-center">
+              <Package className="w-9 h-9 text-zinc-300 dark:text-zinc-700" aria-hidden />
+            </div>
+          )}
+        </div>
+
+        {/* Body — flex-col so the spacer + CTA always pin to the bottom */}
+        <div className="flex-1 flex flex-col px-7 pt-6 pb-7">
+
+          {/* ── Fixed header zone ── */}
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-zinc-400 mb-3">
+            BrizerHero Package
+          </p>
+          <h2 className="text-[20px] font-semibold text-zinc-900 dark:text-zinc-50 leading-snug mb-1">
+            {pkg.name}
+          </h2>
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className={cn(
+              'text-[28px] font-light leading-none',
+              featured ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-900 dark:text-zinc-50',
+            )}>
+              {formatPrice(pkg.price, pkg.currencyCode as CurrencyCode)}
+            </span>
+            <span className="text-[12px] text-zinc-400">one-time</span>
+          </div>
+
+          {/* Description — exactly 2 lines always, no reflow */}
+          <p className="text-[13px] text-zinc-500 leading-relaxed line-clamp-2 mb-5">
+            {pkg.shortDescription}
+          </p>
+
+          {/* Divider */}
+          <div className="h-px bg-zinc-100 dark:bg-zinc-800 mb-5" aria-hidden />
+
+          {/* ── Feature list — exactly 5 slots, each capped to 1 line ── */}
+          {highlights.length > 0 && (
+            <ul className="space-y-2.5 mb-1" aria-label="Package highlights">
+              {highlights.map((s) => (
+                <li key={s.id} className="flex items-center gap-2.5 min-w-0">
+                  <span className={cn(
+                    'flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center',
+                    featured
+                      ? 'bg-emerald-100 dark:bg-emerald-950/50'
+                      : 'bg-zinc-100 dark:bg-zinc-800',
+                  )}>
+                    <Check className={cn(
+                      'w-2.5 h-2.5',
+                      featured ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-500 dark:text-zinc-400',
+                    )} aria-hidden />
+                  </span>
+                  <span className="text-[13px] text-zinc-600 dark:text-zinc-400 truncate leading-none">
+                    {s.serviceResponse?.name}
+                  </span>
                 </li>
               ))}
-              {hasMore && (
-                <li className="text-xs text-brand-500">+{serviceNames.length - 6} more</li>
-              )}
             </ul>
-          </div>
-        )}
-
-        <Link
-          href={`/packages/${pkg.slug}`}
-          className={cn(
-            'btn-primary w-full justify-center text-sm py-2.5 transition-all',
-            isFeatured && 'shadow-md hover:shadow-lg'
           )}
-        >
-          View Details <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    </motion.div>
+
+          {/* Extra count — fixed height so its presence/absence doesn't shift CTA */}
+          <div className="h-6 flex items-center mt-1 mb-0">
+            {extraCount > 0 && (
+              <span className="text-[12px] text-zinc-400 pl-[26px]">
+                +{extraCount} more {extraCount === 1 ? 'feature' : 'features'}
+              </span>
+            )}
+          </div>
+
+          {/* Spacer pushes CTA to the bottom regardless of content length */}
+          <div className="flex-1" aria-hidden />
+
+          {/* ── CTA — always at the bottom of every card ── */}
+          <Link
+            href={`/packages/${pkg.slug}`}
+            className={cn(
+              'mt-5 flex items-center justify-center gap-2 font-semibold text-[14px] py-3.5 rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+              featured
+                ? 'bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 focus-visible:ring-zinc-900'
+                : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 focus-visible:ring-zinc-500',
+            )}
+          >
+            View this package
+            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
+          </Link>
+        </div>
+      </motion.article>
+    </div>
   );
 }
 
-// ─── Dynamic Comparison Table ──────────────────────────────────────────────
+// ─── Comparison Table ─────────────────────────────────────────────────────────
 function ComparisonTable({ packages }: { packages: PackageResponse[] }) {
-  // Collect all unique service names from all packages
-  const allServiceNames = useMemo(() => {
+  const allServices = useMemo(() => {
     const set = new Set<string>();
-    packages.forEach(p => {
-      p.services?.forEach(s => {
-        if (s.serviceResponse?.name) set.add(s.serviceResponse.name);
-      });
-    });
+    packages.forEach(p => p.services?.forEach(s => {
+      if (s.serviceResponse?.name) set.add(s.serviceResponse.name);
+    }));
     return Array.from(set).sort();
   }, [packages]);
 
-  if (allServiceNames.length === 0) return null;
+  if (!allServices.length) return null;
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
-      <table className="w-full min-w-[640px] text-sm">
-        <thead className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
-          <tr>
-            <th className="text-left px-5 py-4 font-semibold text-zinc-700 dark:text-zinc-300">Service</th>
+    <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      <table className="w-full min-w-[540px] text-[13px]" role="table" aria-label="Package comparison">
+        <thead>
+          <tr className="border-b border-zinc-100 dark:border-zinc-800">
+            <th className="text-left px-6 py-4 font-semibold text-zinc-500 dark:text-zinc-400 w-1/2">Feature</th>
             {packages.map(p => (
-              <th key={p.id} className="px-5 py-4 text-center font-semibold text-zinc-700 dark:text-zinc-300">
-                {p.name}
-                <div className="text-xs font-medium text-brand-600 dark:text-brand-400 mt-0.5">
+              <th key={p.id} className="px-4 py-4 text-center">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">{p.name}</p>
+                <p className="text-[11px] text-zinc-400 font-normal mt-0.5">
                   {formatPrice(p.price, p.currencyCode as CurrencyCode)}
-                </div>
+                </p>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {allServiceNames.map((serviceName) => {
-            const included = packages.map(p =>
-              p.services?.some(s => s.serviceResponse?.name === serviceName)
-            );
-            return (
-              <tr key={serviceName} className="border-t border-zinc-100 dark:border-zinc-800">
-                <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{serviceName}</td>
-                {included.map((has, i) => (
-                  <td key={i} className="px-5 py-3 text-center">
+          {allServices.map((name, i) => (
+            <tr
+              key={name}
+              className={cn(
+                'border-t border-zinc-50 dark:border-zinc-800/50',
+                i % 2 === 0 ? '' : 'bg-zinc-50/50 dark:bg-zinc-800/20'
+              )}
+            >
+              <td className="px-6 py-3.5 text-zinc-700 dark:text-zinc-300">{name}</td>
+              {packages.map(p => {
+                const has = p.services?.some(s => s.serviceResponse?.name === name);
+                return (
+                  <td key={p.id} className="px-4 py-3.5 text-center">
                     {has ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 text-xs font-medium">
-                        <Check className="w-3 h-3" /> Included
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/40" aria-label="Included">
+                        <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" aria-hidden />
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 text-xs">
-                        <X className="w-3 h-3" /> Not included
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800" aria-label="Not included">
+                        <X className="w-3 h-3 text-zinc-300 dark:text-zinc-600" aria-hidden />
                       </span>
                     )}
                   </td>
-                ))}
-              </tr>
-            );
-          })}
+                );
+              })}
+            </tr>
+          ))}
         </tbody>
+        <tfoot>
+          <tr className="border-t border-zinc-200 dark:border-zinc-800">
+            <td className="px-6 py-4" />
+            {packages.map(p => (
+              <td key={p.id} className="px-4 py-4 text-center">
+                <Link
+                  href={`/packages/${p.slug}`}
+                  className="inline-flex items-center gap-1 text-[13px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                >
+                  View <ArrowRight className="w-3 h-3" aria-hidden />
+                </Link>
+              </td>
+            ))}
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export function PackagesPageClient() {
   const { data: packages, isLoading, error } = usePackages();
-  const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [showCompare, setShowCompare] = useState(false);
 
-  const filtered = useMemo(() => {
+  const sorted = useMemo(() => {
     if (!packages) return [];
-    let result = [...packages];
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.shortDescription.toLowerCase().includes(q) ||
-        p.services?.some(s => s.serviceResponse?.name?.toLowerCase().includes(q))
-      );
-    }
+    const result = [...packages];
     if (sort === 'price-asc') result.sort((a, b) => a.price - b.price);
-    if (sort === 'price-desc') result.sort((a, b) => b.price - a.price);
-    if (sort === 'default') result.sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
+    else if (sort === 'price-desc') result.sort((a, b) => b.price - a.price);
+    else result.sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
     return result;
-  }, [packages, search, sort]);
+  }, [packages, sort]);
 
-  // Compute all service names for trust metrics (dynamic)
-  const allServiceNames = useMemo(() => {
-    if (!packages) return [];
+  const allServiceCount = useMemo(() => {
+    if (!packages) return 0;
     const set = new Set<string>();
-    packages.forEach(p => {
-      p.services?.forEach(s => {
-        if (s.serviceResponse?.name) set.add(s.serviceResponse.name);
-      });
-    });
-    return Array.from(set);
+    packages.forEach(p => p.services?.forEach(s => { if (s.serviceResponse?.name) set.add(s.serviceResponse.name); }));
+    return set.size;
   }, [packages]);
-
-  const trustMetrics = [
-    { label: 'Features', value: allServiceNames.length + 20, suffix: '+' },
-    { label: 'Mobile Apps', value: 'Included' },
-    { label: 'Admin Dashboard', value: 'Yes' },
-    { label: 'Secure Payments', value: 'Razorpay/Stripe' },
-  ];
-
-  const faqs = [
-    {
-      q: 'What is included in the packages?',
-      a: 'Each package includes a complete ecommerce solution with all necessary features to launch and grow your business. See the comparison table for detailed features.',
-    },
-    {
-      q: 'How long does it take to deliver?',
-      a: 'Delivery times vary by package: Starter (2-3 weeks), Growth (3-4 weeks), Professional (4-6 weeks). We also offer express delivery for an additional fee.',
-    },
-    {
-      q: 'Do you offer post‑launch support?',
-      a: 'Yes! All packages include free support for 3 to 12 months depending on the package. We also offer extended support plans.',
-    },
-    {
-      q: 'Can I upgrade my package later?',
-      a: 'Absolutely. You can upgrade to a higher package at any time; we’ll migrate your data and add the new features seamlessly.',
-    },
-  ];
 
   if (error) {
     return (
-      <div className="min-h-[60vh] pt-32 flex items-center justify-center">
+      <div className="min-h-[60vh] pt-24 flex items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-500 mb-4">Unable to load packages.</p>
-          <button onClick={() => window.location.reload()} className="btn-primary">Try again</button>
+          <button onClick={() => window.location.reload()} className="inline-flex items-center gap-2 bg-zinc-900 text-white text-[14px] font-semibold px-5 py-2.5 rounded-full hover:opacity-90 transition">
+            Try again
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative pt-28 pb-12 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
-        <div className="section-container text-center max-w-3xl mx-auto relative">
-          <span className="eyebrow justify-center">Solutions</span>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-100 mt-2 mb-5">
-            Ecommerce Solutions{' '}
-            <span className="bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent">
-              Built For Growth
-            </span>
-          </h1>
-          <p className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed">
-            Launch, manage and scale your ecommerce business with complete ecommerce ecosystem packages.
+    <div className="bg-[#FAFAF8] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section className="px-6 md:px-10 max-w-7xl mx-auto pt-24 pb-20">
+        <motion.div {...fadeUp()}>
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-400 mb-5">
+            Software packages
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mt-8">
-            {trustMetrics.map((metric, idx) => (
-              <div key={idx} className="text-center p-3 rounded-xl bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-white/20 dark:border-zinc-800/50">
-                <p className="text-xl font-bold text-zinc-900 dark:text-white">{metric.value}{metric.suffix || ''}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{metric.label}</p>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-zinc-900 dark:text-zinc-50 leading-[1.04] mb-6 max-w-3xl">
+            Built for the way<br />
+            <span className="text-secondary">grocery stores actually work.</span>
+          </h1>
+          <p className="text-[18px] text-zinc-500 max-w-xl leading-relaxed mb-10">
+            Every package is purpose-built for Indian grocery, organic, bakery, dairy, and produce businesses — not adapted from a generic template.
+          </p>
+          <div className="flex flex-wrap gap-8">
+            {[
+              { value: packages?.length ?? '—', suffix: '', label: 'packages' },
+              { value: allServiceCount || '—', suffix: '+', label: 'features included' },
+              { value: '30', suffix: ' days', label: 'average delivery' },
+              { value: '3', suffix: ' months', label: 'free support' },
+            ].map(({ value, suffix, label }) => (
+              <div key={label}>
+                <p className="text-[26px] font-light text-zinc-900 dark:text-zinc-50">{value}{suffix}</p>
+                <p className="text-[12px] text-zinc-400 mt-0.5">{label}</p>
               </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── WHO THESE ARE FOR ────────────────────────────────────────────── */}
+      <section className="bg-zinc-900 dark:bg-zinc-900/80 px-6 md:px-10 py-20">
+        <div className="max-w-7xl mx-auto">
+          <motion.p {...fadeUp()} className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-500 mb-10">
+            Designed for
+          </motion.p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {[
+              { icon: Store, label: 'Indian Grocery' },
+              { icon: Leaf, label: 'Organic Stores' },
+              { icon: Wheat, label: 'Bakeries' },
+              { icon: Milk, label: 'Dairy Businesses' },
+              { icon: Package, label: 'Produce Markets' },
+              { icon: Truck, label: 'Distributors' },
+            ].map(({ icon: Icon, label }, i) => (
+              <motion.div
+                key={label}
+                {...fadeUp(i * 0.05)}
+                className="bg-zinc-800/50 border border-zinc-700/50 rounded-xl px-4 py-5 text-center hover:border-zinc-600 transition-colors"
+              >
+                <Icon className="w-5 h-5 text-zinc-400 mx-auto mb-2.5" aria-hidden />
+                <p className="text-[13px] text-zinc-300 font-medium">{label}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Search & Filter */}
-      {!isLoading && packages && packages.length > 0 && (
-        <div className="section-container pb-6">
-          <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
-            <div className="text-sm text-zinc-500">
-              {filtered.length} of {packages.length} packages
-            </div>
-            <div className="flex gap-3 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name or service..."
-                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50"
-                />
-              </div>
+      {/* ── PACKAGES GRID ────────────────────────────────────────────────── */}
+      <section className="px-6 md:px-10 max-w-7xl mx-auto py-24">
+        <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
+          <motion.div {...fadeUp()}>
+            <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-400 mb-2">Choose your package</p>
+            <h2 className="text-3xl font-light text-zinc-900 dark:text-zinc-50">
+              {isLoading ? 'Loading packages…' : `${sorted.length} package${sorted.length !== 1 ? 's' : ''} available`}
+            </h2>
+          </motion.div>
+          {!isLoading && sorted.length > 1 && (
+            <motion.div {...fadeUp(0.05)}>
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value as any)}
-                className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                className="text-[13px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-600 dark:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                aria-label="Sort packages"
               >
                 <option value="default">Recommended</option>
-                <option value="price-asc">Price: Low to high</option>
-                <option value="price-desc">Price: High to low</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="price-desc">Price: high to low</option>
               </select>
-            </div>
-          </div>
+            </motion.div>
+          )}
         </div>
-      )}
 
-      {/* Packages Grid */}
-      <section className="section-padding pt-0">
-        <div className="section-container">
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                {Array(3).fill(0).map((_, i) => <PackageCardSkeleton key={i} />)}
-              </motion.div>
-            ) : filtered.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-12 text-zinc-500"
-              >
-                No packages match your search.
-              </motion.div>
-            ) : (
-              <motion.div
-                key="results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start"
-              >
-                {filtered.map((pkg, i) => {
-                  const isFeatured = pkg.featured || (filtered.length === 3 && i === 1);
-                  return <PackageCard key={pkg.id} pkg={pkg} index={i} featured={isFeatured} />;
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[0, 1, 2].map(i => <PackageSkeleton key={i} />)}
+            </motion.div>
+          ) : sorted.length === 0 ? (
+            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 text-zinc-400">
+              No packages found.
+            </motion.div>
+          ) : (
+            <motion.div key="packages" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+              {sorted.map((pkg, i) => (
+                <PackageCard
+                  key={pkg.id}
+                  pkg={pkg}
+                  index={i}
+                  featured={pkg.featured || (sorted.length === 3 && i === 1)}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Compare toggle */}
+        {!isLoading && sorted.length > 1 && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => setShowCompare(v => !v)}
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+              aria-expanded={showCompare}
+              aria-controls="comparison-table"
+            >
+              {showCompare ? 'Hide' : 'Compare'} all packages
+              {showCompare ? <ChevronUp className="w-4 h-4" aria-hidden /> : <ChevronDown className="w-4 h-4" aria-hidden />}
+            </button>
+          </div>
+        )}
+
+        <AnimatePresence>
+          {showCompare && !isLoading && sorted.length > 1 && (
+            <motion.div
+              id="comparison-table"
+              key="compare"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-8 overflow-hidden"
+            >
+              <ComparisonTable packages={sorted} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
-      {/* Comparison Table Toggle */}
-      {!isLoading && packages && packages.length > 1 && allServiceNames.length > 0 && (
-        <div className="section-container pb-4">
-          <button
-            onClick={() => setShowCompare(!showCompare)}
-            className="flex items-center gap-1 text-sm text-brand-600 hover:underline mx-auto transition-colors"
-          >
-            {showCompare ? 'Hide comparison' : 'Compare packages'}
-            {showCompare ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-        </div>
-      )}
-
-      {/* Comparison Table (dynamic) */}
-      {showCompare && !isLoading && packages && packages.length > 1 && allServiceNames.length > 0 && (
-        <section className="section-padding pt-0">
-          <div className="section-container">
-            <ComparisonTable packages={packages} />
-          </div>
-        </section>
-      )}
-
-      {/* What Happens After Purchase */}
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
-        <div className="section-container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center max-w-2xl mx-auto mb-10"
-          >
-            <span className="eyebrow justify-center">Process</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-              What Happens After Purchase
+      {/* ── WHAT MAKES US DIFFERENT ──────────────────────────────────────── */}
+      <section className="bg-zinc-50 dark:bg-zinc-900/40 px-6 md:px-10 py-24">
+        <div className="max-w-7xl mx-auto">
+          <motion.div {...fadeUp()} className="mb-14">
+            <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-400 mb-4">Why BrizerHero</p>
+            <h2 className="text-4xl md:text-5xl font-light text-zinc-900 dark:text-zinc-50 leading-tight max-w-2xl">
+              We've built this for<br />
+              <span className="text-secondary">grocery businesses, specifically.</span>
             </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mt-2">
-              We guide you through every step from discovery to launch.
-            </p>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { icon: Users, label: 'Discovery Call' },
-              { icon: LayoutDashboard, label: 'Design' },
-              { icon: Code, label: 'Development' },
-              { icon: Shield, label: 'Testing' },
-              { icon: Rocket, label: 'Launch' },
-              { icon: Settings, label: 'Support' },
-            ].map((step, idx) => (
+              {
+                icon: ShoppingCart,
+                title: 'Online ordering, not just a website',
+                body: 'Customers can browse, add to cart, pick a delivery slot, and pay — without calling you.',
+              },
+              {
+                icon: Package,
+                title: 'Inventory that talks to orders',
+                body: 'When something sells out, it goes offline automatically. When stock arrives, it comes back.',
+              },
+              {
+                icon: Truck,
+                title: 'Delivery designed for daily routes',
+                body: 'Slot-based scheduling, delivery zone management, and driver apps — not bolted on after the fact.',
+              },
+              {
+                icon: CreditCard,
+                title: 'Every payment method covered',
+                body: 'UPI, cards, wallets, cash on delivery, credit accounts for loyal customers.',
+              },
+              {
+                icon: Smartphone,
+                title: 'Mobile apps for your customers',
+                body: 'iOS and Android apps under your store name. Push notifications. Reorder in two taps.',
+              },
+              {
+                icon: BarChart3,
+                title: 'Numbers that mean something',
+                body: 'Which products move, which customers return, what your peak hours are. All in one place.',
+              },
+            ].map(({ icon: Icon, title, body }, i) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all text-center"
+                key={title}
+                {...fadeUp(i * 0.05)}
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
               >
-                <div className="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center mb-2">
-                  <step.icon className="w-5 h-5 text-brand-600" />
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-5">
+                  <Icon className="w-4.5 h-4.5 text-emerald-700 dark:text-emerald-400" aria-hidden />
                 </div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{step.label}</span>
+                <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-2">{title}</h3>
+                <p className="text-[13px] text-zinc-500 leading-relaxed">{body}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ROI Section */}
-      <section className="py-20 bg-white dark:bg-zinc-900">
-        <div className="section-container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center max-w-2xl mx-auto mb-10"
-          >
-            <span className="eyebrow justify-center">ROI</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-              Why Businesses Choose Our Packages
-            </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mt-2">
-              Accelerate your growth with a complete ecommerce ecosystem.
-            </p>
-          </motion.div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: TrendingUp, label: 'Increase Online Sales' },
-              { icon: Settings, label: 'Automate Operations' },
-              { icon: Package, label: 'Manage Inventory' },
-              { icon: Truck, label: 'Track Orders' },
-              { icon: CreditCard, label: 'Accept Payments' },
-              { icon: BarChart3, label: 'Scale Faster' },
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="flex items-center gap-4 p-5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-brand-200 dark:hover:border-brand-800 transition-all"
-              >
-                <div className="w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-5 h-5 text-brand-600" />
-                </div>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">{item.label}</span>
-              </motion.div>
-            ))}
-          </div>
+      {/* ── IMPLEMENTATION JOURNEY ───────────────────────────────────────── */}
+      <section className="px-6 md:px-10 max-w-7xl mx-auto py-24">
+        <motion.div {...fadeUp()} className="mb-14">
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-400 mb-4">How it works</p>
+          <h2 className="text-4xl md:text-5xl font-light text-zinc-900 dark:text-zinc-50">
+            From sign-off to store launch.
+          </h2>
+        </motion.div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { n: '01', step: 'Discovery', detail: 'We learn your store, your customers, and your daily operations.' },
+            { n: '02', step: 'Planning', detail: 'We scope the project, agree on timeline, and you approve before we start.' },
+            { n: '03', step: 'Design', detail: 'Your brand applied to every screen. You see it before we build it.' },
+            { n: '04', step: 'Development', detail: 'Built and tested against your actual workflows — not a demo scenario.' },
+            { n: '05', step: 'Testing', detail: 'You and your staff test it. We fix anything that doesn\'t feel right.' },
+            { n: '06', step: 'Launch & Support', detail: 'We go live together. Three months of post-launch support, included.' },
+          ].map(({ n, step, detail }, i) => (
+            <motion.div
+              key={n}
+              {...fadeUp(i * 0.05)}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7"
+            >
+              <p className="text-[11px] font-bold text-zinc-300 dark:text-zinc-700 tracking-[0.15em] mb-4">{n}</p>
+              <h3 className="text-[17px] font-semibold text-zinc-900 dark:text-zinc-100 mb-2">{step}</h3>
+              <p className="text-[13px] text-zinc-500 leading-relaxed">{detail}</p>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
-        <div className="section-container max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <span className="eyebrow justify-center">FAQ</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-              Frequently Asked Questions
-            </h2>
-          </motion.div>
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
-                className="rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-5"
-              >
-                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{faq.q}</h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">{faq.a}</p>
-              </motion.div>
-            ))}
+      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
+      <section className="px-6 md:px-10 max-w-7xl mx-auto pb-24">
+        <motion.div
+          {...fadeUp()}
+          className="bg-zinc-900 dark:bg-zinc-800/60 rounded-3xl px-10 md:px-16 py-16 md:py-20 text-center"
+          role="complementary"
+          aria-label="Call to action"
+        >
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-500 mb-5">Not sure which to pick?</p>
+          <h2 className="text-4xl md:text-5xl font-light text-white mb-5 leading-tight">
+            Talk to us first.<br />
+            <span className="text-secondary">We'll tell you exactly what fits.</span>
+          </h2>
+          <p className="text-zinc-400 text-[16px] mb-10 max-w-lg mx-auto leading-relaxed">
+            A 30-minute call is all it takes. We'll map your business and recommend the right package — or tell you honestly if none of them are the right fit.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-white text-zinc-900 font-semibold text-[14px] px-7 py-3.5 rounded-full hover:bg-zinc-100 transition-colors"
+            >
+              Book a free call <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white font-medium text-[14px] px-7 py-3.5 rounded-full transition-colors"
+            >
+              Send us a message
+            </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       <ContactCta />
-    </>
+    </div>
   );
 }

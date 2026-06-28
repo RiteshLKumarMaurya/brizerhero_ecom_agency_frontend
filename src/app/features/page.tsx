@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import { FeaturesPageClient } from './FeaturesPageClient';
 
 export const metadata: Metadata = {
-  title: 'Features — Complete Ecommerce Ecosystem',
-  description: 'Explore the full suite of powerful features for modern ecommerce: store management, inventory, orders, payments, analytics, mobile apps, and more.',
+  title: 'Platform Capabilities — BrizerHero',
+  description:
+    'See every capability built into the BrizerHero platform — from customer ordering and inventory management to delivery, payments, and analytics. Built exclusively for Indian grocery stores, bakeries, dairy businesses, and produce markets.',
   openGraph: {
-    title: 'Features — BrizerHero Ecommerce Solutions',
-    description: 'Everything you need to launch, manage and scale your ecommerce business.',
+    title: 'Platform Capabilities — BrizerHero',
+    description:
+      'Every part of the BrizerHero platform was built around how grocery businesses actually operate. Explore all capabilities included with every plan.',
   },
 };
 

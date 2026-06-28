@@ -20,13 +20,13 @@ const modules = [
 
 export function EcosystemVisual() {
   return (
-    <section className="py-20 bg-zinc-950 border-t border-zinc-800">
+    <section className="py-20 bg-surface border-t border-default">
       <div className="section-container text-center">
         <span className="text-xs font-semibold tracking-widest text-brand-400 uppercase">Ecosystem</span>
-        <h2 className="font-display text-3xl md:text-4xl font-bold text-white mt-2 mb-4">
+        <h2 className="font-display text-3xl md:text-4xl font-bold text-primary mt-2 mb-4">
           One Connected Ecommerce Ecosystem
         </h2>
-        <p className="text-zinc-400 max-w-2xl mx-auto mb-12">
+        <p className="text-muted max-w-2xl mx-auto mb-12">
           Every component works together seamlessly – from storefront to delivery.
         </p>
 
@@ -72,10 +72,10 @@ export function EcosystemVisual() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
                 whileHover={{ scale: 1.05 }}
-                className="flex flex-col items-center p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-brand-500/50 transition-all"
+                className="flex flex-col items-center p-4 rounded-xl bg-card backdrop-blur-sm border border-default hover:border-brand-500/50 transition-all"
               >
                 <mod.icon className="w-8 h-8 text-brand-400 mb-2" />
-                <span className="text-xs text-zinc-300 font-medium">{mod.label}</span>
+                <span className="text-xs text-secondary font-medium">{mod.label}</span>
               </motion.div>
             ))}
           </div>

@@ -1,24 +1,35 @@
 // lib/testimonialMetadata.ts
+//
+// PLACEHOLDER DATA — the three entries below are illustrative examples only,
+// not real clients. Replace the keys with real client names exactly as
+// returned by the API, and only ship results that are actually true.
+// Never add a revenue or sales figure that hasn't been confirmed by the client.
 
 export interface TestimonialMetadata {
-  services: string[];
-  result: string;
-  industry?: string;
-  projectType?: string;
+  industry: string;        // The kind of grocery business — shown as their business type
+  services: string[];      // What we actually helped with (max 4–5 shown)
+  result: string;          // One honest, observable change — never a revenue or sales number
+  location?: string;       // City, State — editorial-only, not part of the API response
 }
 
 export const testimonialMetadataMap: Record<string, TestimonialMetadata> = {
-  'John Doe': {
-    services: ['Ecommerce Website', 'Admin Panel', 'Payment Integration'],
-    result: 'Increased Online Sales by 200%',
-    industry: 'Fashion Retail',
-    projectType: 'Full Ecommerce Platform',
+  'Raj Patel': {
+    industry: 'Indian Grocery',
+    services: ['Online Ordering', 'Pickup & Delivery', 'Inventory Dashboard'],
+    result: 'Customers now order online instead of calling the store.',
+    location: 'Edison, NJ',
   },
-  'Jane Smith': {
-    services: ['Android App', 'iOS App', 'Delivery Management'],
-    result: 'Automated Delivery Operations',
-    industry: 'Food Delivery',
-    projectType: 'Delivery App Ecosystem',
+  'Maria Lopez': {
+    industry: 'Organic Grocery',
+    services: ['Customer Mobile App', 'Admin Panel', 'Payment Integration'],
+    result: 'Replaced a paper order book with one simple dashboard.',
+    location: 'Austin, TX',
+  },
+  'Sana Khan': {
+    industry: 'Bakery',
+    services: ['Online Ordering', 'Inventory Dashboard'],
+    result: 'Festival pre-orders no longer come in one phone call at a time.',
+    location: 'Chicago, IL',
   },
   // Add more entries matching clientName from API
 };

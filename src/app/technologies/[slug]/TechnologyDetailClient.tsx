@@ -1,96 +1,72 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
-  ExternalLink,
   ArrowRight,
-  Sparkles,
-  Code,
-  Zap,
-  Award,
-  CheckCircle2,
-  Shield,
-  Server,
-  Cloud,
-  Database,
-  Smartphone,
-  Settings,
+  ExternalLink,
+  ShieldCheck,
+  Boxes,
+  Gauge,
+  Layers,
+  Cpu,
+  AlertTriangle,
 } from 'lucide-react';
 import { useTechnology } from '@/hooks/useApi';
 import { getOptimizedUrl } from '@/lib/cdn';
 import { ContactCta } from '@/components/sections/ContactCta';
 import { getTechMetadata } from '@/lib/techMetadata';
-import type { TechnologyResponse, TechnologyLinkResponse } from '@/types';
-import { useState } from 'react';
+import { getTechBusinessContent, type TrustIndicator } from '@/lib/techBusinessContent';
+import type { TechnologyLinkResponse } from '@/types';
 
 interface Props {
   slug: string;
 }
 
-// ─── Category Icons ──────────────────────────────────────────────────────
-const categoryIconMap: Record<string, React.ElementType> = {
-  Backend: Server,
-  Frontend: Code,
-  Database: Database,
-  Cloud: Cloud,
-  Mobile: Smartphone,
-  DevOps: Settings,
-  // Add more categories as needed
+// ─── Trust Indicator Icons ──────────────────────────────────────────────
+const trustIconMap: Record<TrustIndicator, React.ElementType> = {
+  'Production Ready': ShieldCheck,
+  'Enterprise Standard': Layers,
+  'Battle Tested': Gauge,
+  'Core Infrastructure': Cpu,
+  'Customer Experience': Boxes,
 };
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 // ─── Animation Variants ──────────────────────────────────────────────────
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
 };
 
-const staggerContainer = {
+const stagger = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────
 export function TechnologyDetailClient({ slug }: Props) {
   const { data: tech, isLoading, error, refetch } = useTechnology(slug);
-  const { scrollYProgress } = useScroll();
-  const width = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const [iconError, setIconError] = useState(false);
 
   // ── Loading State ──────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-32">
-        <div className="section-container max-w-5xl mx-auto">
-          <div className="space-y-8 animate-pulse">
-            <div className="skeleton h-8 w-32 rounded-full" />
-            <div className="flex items-start gap-6">
-              <div className="skeleton w-24 h-24 rounded-2xl" />
-              <div className="flex-1 space-y-4">
-                <div className="skeleton h-12 w-2/3 rounded-xl" />
-                <div className="skeleton h-6 w-full rounded-lg" />
-                <div className="skeleton h-6 w-5/6 rounded-lg" />
-              </div>
+      <div className="min-h-screen pt-24 bg-[#FBFBF9] dark:bg-[#0A0A0B]">
+        <div className="section-container max-w-3xl mx-auto">
+          <div className="space-y-7 animate-pulse">
+            <div className="skeleton h-4 w-28 rounded" />
+            <div className="flex items-center gap-4">
+              <div className="skeleton h-20 w-20 rounded-[20px]" />
+              <div className="skeleton h-4 w-40 rounded" />
             </div>
-            <div className="grid md:grid-cols-2 gap-8 mt-8">
-              <div className="space-y-3">
-                <div className="skeleton h-6 w-40 rounded-lg" />
-                <div className="skeleton h-16 w-full rounded-xl" />
-                <div className="skeleton h-16 w-full rounded-xl" />
-              </div>
-              <div className="space-y-3">
-                <div className="skeleton h-6 w-40 rounded-lg" />
-                <div className="flex flex-wrap gap-2">
-                  <div className="skeleton h-10 w-28 rounded-full" />
-                  <div className="skeleton h-10 w-32 rounded-full" />
-                </div>
-              </div>
-            </div>
+            <div className="skeleton h-12 w-2/3 rounded-xl" />
+            <div className="skeleton h-5 w-full rounded-lg" />
+            <div className="skeleton h-5 w-5/6 rounded-lg" />
           </div>
         </div>
       </div>
@@ -100,18 +76,20 @@ export function TechnologyDetailClient({ slug }: Props) {
   // ── Error State ────────────────────────────────────────────────────────
   if (error || !tech) {
     return (
-      <div className="min-h-[70vh] pt-32 flex items-center justify-center px-4">
+      <div className="min-h-[70vh] pt-24 flex items-center justify-center px-4 bg-[#FBFBF9] dark:bg-[#0A0A0B]">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <Sparkles className="w-10 h-10 text-red-500" />
+          <div className="w-16 h-16 mx-auto mb-7 rounded-[20px] bg-[#F3F1EB] dark:bg-[#16161A] ring-1 ring-inset ring-[#EAE8E1] dark:ring-[#222226] flex items-center justify-center">
+            <AlertTriangle className="w-6 h-6 text-[#8A8472] dark:text-[#7A7A85]" strokeWidth={1.75} />
           </div>
-          <h1 className="font-display text-3xl font-bold mb-3">Technology Not Found</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-6">
-            {error?.message || "The technology you're looking for doesn't exist or was removed."}
+          <h1 className="font-display text-[28px] font-semibold text-[#14171A] dark:text-[#F7F7F8] mb-3 tracking-tight">
+            We couldn't find this capability
+          </h1>
+          <p className="text-[#6B6F73] dark:text-[#9A9AA3] text-[15px] leading-relaxed mb-9">
+            {error?.message || "This page may have moved or no longer exists. Let's get you back to the full list."}
           </p>
           <div className="flex gap-3 justify-center">
             <Link href="/technologies" className="btn-primary px-6 py-2.5">
@@ -129,204 +107,168 @@ export function TechnologyDetailClient({ slug }: Props) {
   // ── Derived Values ─────────────────────────────────────────────────────
   const iconSrc = tech.iconImage ? getOptimizedUrl(tech.iconImage) : null;
   const metadata = getTechMetadata(tech.slug);
-  const CategoryIcon = categoryIconMap[metadata.category] || Code;
+  const content = getTechBusinessContent(tech.slug, tech.name, tech.description);
+  const TrustIcon = trustIconMap[content.trust];
   const usedInProjects = metadata.usedInProjects;
 
-  // Static benefits (can be extended later)
-  const benefits = [
-    'Blazing fast performance for high-traffic ecommerce',
-    'Scalable microservices architecture',
-    'Enterprise-grade security and compliance',
-    'Seamless integration with payment gateways',
-    'Real-time analytics and reporting',
-    'Headless CMS and API-first design',
-  ];
-
-  // Related technologies (hardcoded for demo; could be fetched later)
+  // Related technologies (kept as existing static demo data; presentation only)
   const relatedTechs = [
     { name: 'Spring Boot', slug: 'spring-boot' },
     { name: 'PostgreSQL', slug: 'postgresql' },
     { name: 'Redis', slug: 'redis' },
     { name: 'Kafka', slug: 'kafka' },
-  ];
+  ].filter((r) => r.slug !== tech.slug);
 
-  // ── Success Render ─────────────────────────────────────────────────────
   return (
-    <>
-      {/* Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-cyan-500 z-50 origin-left"
-        style={{ scaleX: width }}
-      />
-
-      {/* ─── Hero Section ────────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-16 overflow-hidden bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-950 dark:to-zinc-900">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
-
-        <div className="section-container max-w-5xl mx-auto relative">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+    <div className="bg-[#FBFBF9] dark:bg-[#0A0A0B]">
+      {/* ─── Hero ─────────────────────────────────────────────────────── */}
+      <section className="relative pt-24 pb-24 border-b border-[#ECEBE6] dark:border-[#1A1A1E]">
+        <div className="section-container max-w-3xl mx-auto">
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
             <Link
               href="/technologies"
-              className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-brand-500 mb-8 transition-all group"
+              className="inline-flex items-center gap-2 text-[13.5px] font-medium text-[#9C9B91] dark:text-[#73737E] hover:text-[#14171A] dark:hover:text-[#F3F3F5] mb-12 transition-colors duration-300 group"
             >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-0.5" />
               All Technologies
             </Link>
           </motion.div>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col md:flex-row gap-8 items-start"
-          >
-            {/* Left: Logo, Title, Description, Badges, Links */}
-            <div className="flex-1 space-y-4">
-              {/* Logo */}
-              <motion.div variants={fadeInUp} className="relative inline-flex">
-                <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-cyan-500 rounded-2xl blur-xl opacity-50" />
-                <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg flex items-center justify-center">
-                  {iconSrc && !iconError ? (
-                    <Image
-                      src={iconSrc}
-                      alt={tech.name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 object-contain"
-                      onError={() => setIconError(true)}
-                      unoptimized
-                    />
-                  ) : (
-                    <CategoryIcon className="w-10 h-10 text-white" />
-                  )}
-                </div>
-              </motion.div>
+          <motion.div variants={stagger} initial={false} animate="visible">
+            {/* Icon stage + identity */}
+            <motion.div variants={fadeUp} className="flex items-center gap-5 mb-9">
+              <div
+                className="
+                  relative flex h-20 w-20 items-center justify-center rounded-[20px] flex-shrink-0
+                  bg-gradient-to-b from-[#FBFAF7] to-[#F3F1EB]
+                  ring-1 ring-inset ring-[#EAE8E1]
+                  shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(20,23,26,0.04)]
+                  dark:bg-gradient-to-b dark:from-[#1C1C21] dark:to-[#17171B]
+                  dark:ring-[#2A2A31]
+                  dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
+                "
+              >
+                {iconSrc && !iconError ? (
+                  <Image
+                    src={iconSrc}
+                    alt={tech.name}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 object-contain dark:brightness-[1.15] dark:contrast-[1.05]"
+                    onError={() => setIconError(true)}
+                    unoptimized
+                  />
+                ) : (
+                  <span className="text-[26px] font-semibold text-[#8A8472] dark:text-[#7A7A85]">
+                    {tech.name.charAt(0)}
+                  </span>
+                )}
+              </div>
 
-              {/* Badges */}
-              <motion.div variants={fadeInUp} className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-                  <CategoryIcon className="w-4 h-4" />
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] font-medium uppercase tracking-[0.07em] text-[#ADABA1] dark:text-[#5C5C66]">
                   {metadata.category}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-                  {metadata.experienceLevel}
+                <span className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[#1F4D3D] dark:text-[#5FBE9B]">
+                  <TrustIcon className="h-3.5 w-3.5" strokeWidth={2} />
+                  {content.trust}
                 </span>
-              </motion.div>
-
-              {/* Title */}
-              <motion.h1
-                variants={fadeInUp}
-                className="font-display text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent"
-              >
-                {tech.name}
-              </motion.h1>
-
-              {/* Description */}
-              {tech.description && (
-                <motion.p
-                  variants={fadeInUp}
-                  className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed"
-                >
-                  {tech.description}
-                </motion.p>
-              )}
-
-              {/* External Links */}
-              {tech.links && tech.links.length > 0 && (
-                <motion.div variants={fadeInUp} className="flex flex-wrap gap-3 pt-2">
-                  {tech.links.map((linkItem: TechnologyLinkResponse) => (
-                    <a
-                      key={linkItem.id}
-                      href={linkItem.link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:border-brand-400 hover:text-brand-600 dark:hover:text-brand-400 transition-all group"
-                    >
-                      {linkItem.link.name}
-                      <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </a>
-                  ))}
-                </motion.div>
-              )}
-            </div>
-
-            {/* Right: CTA Card */}
-            <motion.div
-              variants={fadeInUp}
-              className="md:w-72 flex-shrink-0"
-            >
-              <div className="card-base p-6 space-y-5 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/20 dark:border-zinc-800/50 shadow-xl rounded-2xl">
-                <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400">
-                  <Zap className="w-5 h-5" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Build With This Tech</span>
-                </div>
-                <h3 className="font-display text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                  Ready to use {tech.name}?
-                </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Let's build something amazing with {tech.name}. We specialize in modern, scalable solutions.
-                </p>
-                <Link href="/contact" className="btn-primary w-full justify-center gap-2 group">
-                  Start a Project
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
               </div>
             </motion.div>
+
+            {/* Title */}
+            <motion.h1
+              variants={fadeUp}
+              className="font-display text-[44px] md:text-[54px] font-semibold leading-[1.05] tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-6"
+            >
+              {tech.name}
+            </motion.h1>
+
+            {/* What it is */}
+            <motion.p variants={fadeUp} className="text-[18px] md:text-[19px] leading-relaxed text-[#3C3F42] dark:text-[#C2C2C9] mb-9 max-w-2xl">
+              {content.whatItIs}
+            </motion.p>
+
+            {/* External links, de-emphasized */}
+            {tech.links && tech.links.length > 0 && (
+              <motion.div variants={fadeUp} className="flex flex-wrap gap-2.5">
+                {tech.links.map((linkItem: TechnologyLinkResponse) => (
+                  <a
+                    key={linkItem.id}
+                    href={linkItem.link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      inline-flex items-center gap-1.5 px-4 py-2 rounded-full
+                      border border-[#ECEBE6] text-[13px] font-medium text-[#6B6F73]
+                      hover:border-[#D5D2C8] hover:text-[#14171A]
+                      dark:border-[#222226] dark:text-[#9A9AA3]
+                      dark:hover:border-[#34343B] dark:hover:text-[#F3F3F5]
+                      transition-all duration-300
+                    "
+                  >
+                    {linkItem.link.name}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ))}
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Why We Use This Technology ────────────────────────────────── */}
-      <section className="py-20 bg-white dark:bg-zinc-900">
-        <div className="section-container max-w-4xl mx-auto">
+      {/* ─── Why We Chose This Technology ──────────────────────────────── */}
+      <section className="page-section">
+        <div className="section-container max-w-3xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.55, ease: EASE }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-              Why We Use <span className="text-brand-600">{tech.name}</span>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+              Why we chose it
+            </p>
+            <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-7">
+              A deliberate decision, not a default
             </h2>
-            <div className="prose prose-zinc dark:prose-invert max-w-none">
-              <p className="text-zinc-600 dark:text-zinc-300 text-lg leading-relaxed">
-                {tech.name} enables us to build robust, high-performance ecommerce solutions that scale with your business.
-                Its modern architecture and extensive ecosystem make it the perfect choice for enterprise-grade applications.
-              </p>
-            </div>
+            <p className="text-[17px] leading-relaxed text-[#3C3F42] dark:text-[#C2C2C9]">
+              {content.whyWeUseIt}
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Benefits for Ecommerce ────────────────────────────────────── */}
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
-        <div className="section-container max-w-4xl mx-auto">
+      {/* ─── Where We Use It ───────────────────────────────────────────── */}
+      <section className="py-24 border-y border-[#ECEBE6] dark:border-[#1A1A1E]">
+        <div className="section-container max-w-3xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.55, ease: EASE }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-8 text-center">
-              Benefits for Ecommerce
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+              Where it shows up
+            </p>
+            <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-10">
+              Inside your grocery platform
             </h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {benefits.map((benefit, idx) => (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {content.whereWeUseIt.map((item, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-brand-200 dark:hover:border-brand-800 transition-all"
+                  transition={{ delay: idx * 0.05, duration: 0.5, ease: EASE }}
+                  className="
+                    rounded-2xl px-6 py-5
+                    bg-white border border-[#ECEBE6] shadow-[0_1px_2px_rgba(20,23,26,0.03)]
+                    dark:bg-[#131316] dark:border-[#222226] dark:shadow-none
+                  "
                 >
-                  <CheckCircle2 className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-zinc-700 dark:text-zinc-300">{benefit}</span>
+                  <p className="text-[14.5px] leading-relaxed text-[#3C3F42] dark:text-[#C2C2C9]">{item}</p>
                 </motion.div>
               ))}
             </div>
@@ -334,126 +276,208 @@ export function TechnologyDetailClient({ slug }: Props) {
         </div>
       </section>
 
-      {/* ─── Projects Using This Technology ────────────────────────────── */}
-      <section className="py-20 bg-white dark:bg-zinc-900">
-        <div className="section-container max-w-4xl mx-auto">
+      {/* ─── Business Benefit (anchor moment) ──────────────────────────── */}
+      <section className="py-20">
+        <div className="section-container max-w-3xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: EASE }}
+            className="
+              rounded-[28px] px-9 py-14 md:px-14 md:py-16
+              bg-[#14171A] dark:bg-[#111114]
+              ring-1 ring-inset ring-white/[0.06]
+              shadow-[0_32px_64px_-24px_rgba(20,23,26,0.35)] dark:shadow-none
+            "
           >
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-              Used In Our Projects
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#7FAE99] mb-5">
+              What it means for your business
+            </p>
+            <p className="font-display text-[26px] md:text-[31px] font-medium leading-[1.3] tracking-tight text-white max-w-2xl">
+              {content.businessBenefit}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Key Capabilities ──────────────────────────────────────────── */}
+      <section className="py-24 border-t border-[#ECEBE6] dark:border-[#1A1A1E]">
+        <div className="section-container max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, ease: EASE }}
+          >
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+              Key capabilities
+            </p>
+            <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-10">
+              What this actually does for you
             </h2>
-            <div className="flex flex-wrap gap-3">
-              {usedInProjects.map((project, idx) => (
-                <span
+            <div className="space-y-3.5">
+              {content.capabilities.map((capability, idx) => (
+                <motion.div
                   key={idx}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium"
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05, duration: 0.5, ease: EASE }}
+                  className="
+                    flex items-start gap-4 rounded-2xl px-6 py-5
+                    bg-white border border-[#ECEBE6] shadow-[0_1px_2px_rgba(20,23,26,0.03)]
+                    dark:bg-[#131316] dark:border-[#222226] dark:shadow-none
+                  "
                 >
-                  <CheckCircle2 className="w-4 h-4 text-brand-500" />
-                  {project}
-                </span>
+                  <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#1F4D3D] dark:bg-[#5FBE9B] flex-shrink-0" />
+                  <span className="text-[15px] leading-relaxed text-[#3C3F42] dark:text-[#C2C2C9]">{capability}</span>
+                </motion.div>
               ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Architecture Showcase ────────────────────────────────────── */}
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
-        <div className="section-container max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-6 text-center">
-              How {tech.name} Powers Our Ecosystem
-            </h2>
-            <div className="flex flex-col items-center gap-4 max-w-md mx-auto">
-              <div className="w-full p-4 bg-white dark:bg-zinc-900 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-800 text-center">
-                <span className="font-semibold text-zinc-900 dark:text-white">Customer App</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">React Native / Next.js</p>
+      {/* ─── Projects Using This ───────────────────────────────────────── */}
+      {usedInProjects && usedInProjects.length > 0 && (
+        <section className="py-24 border-t border-[#ECEBE6] dark:border-[#1A1A1E]">
+          <div className="section-container max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease: EASE }}
+            >
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+                Proven in production
+              </p>
+              <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-10">
+                Already running in platforms like yours
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {usedInProjects.map((project, idx) => (
+                  <span
+                    key={idx}
+                    className="
+                      inline-flex items-center px-5 py-2.5 rounded-full text-[13.5px] font-medium
+                      bg-[#F3F1EB] text-[#3C3F42]
+                      dark:bg-[#16161A] dark:text-[#C2C2C9] dark:ring-1 dark:ring-inset dark:ring-[#222226]
+                    "
+                  >
+                    {project}
+                  </span>
+                ))}
               </div>
-              <ArrowDownIcon />
-              <div className="w-full p-4 bg-white dark:bg-zinc-900 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-800 text-center">
-                <span className="font-semibold text-zinc-900 dark:text-white">API Gateway</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Kong / GraphQL</p>
-              </div>
-              <ArrowDownIcon />
-              <div className="w-full p-4 bg-brand-50 dark:bg-brand-950/20 border-2 border-brand-300 dark:border-brand-700 rounded-xl shadow-md text-center">
-                <span className="font-semibold text-brand-700 dark:text-brand-300">{tech.name}</span>
-                <p className="text-xs text-brand-600 dark:text-brand-400">Backend Core</p>
-              </div>
-              <ArrowDownIcon />
-              <div className="w-full p-4 bg-white dark:bg-zinc-900 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-800 text-center">
-                <span className="font-semibold text-zinc-900 dark:text-white">PostgreSQL</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Relational Database</p>
-              </div>
-              <ArrowDownIcon />
-              <div className="w-full p-4 bg-white dark:bg-zinc-900 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-800 text-center">
-                <span className="font-semibold text-zinc-900 dark:text-white">Redis Cache</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">In-memory Data Store</p>
-              </div>
-              <ArrowDownIcon />
-              <div className="w-full p-4 bg-white dark:bg-zinc-900 rounded-xl shadow-md border border-zinc-200 dark:border-zinc-800 text-center">
-                <span className="font-semibold text-zinc-900 dark:text-white">Admin Dashboard</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">React + Tailwind</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
-      {/* ─── Related Technologies ────────────────────────────────────── */}
-      <section className="py-20 bg-white dark:bg-zinc-900">
-        <div className="section-container max-w-4xl mx-auto">
+      {/* ─── Related Technologies ──────────────────────────────────────── */}
+      {relatedTechs.length > 0 && (
+        <section className="py-24 border-t border-[#ECEBE6] dark:border-[#1A1A1E]">
+          <div className="section-container max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease: EASE }}
+            >
+              <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+                Works alongside
+              </p>
+              <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-10">
+                Related parts of your platform
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {relatedTechs.map((related) => (
+                  <Link
+                    key={related.slug}
+                    href={`/technologies/${related.slug}`}
+                    className="
+                      group rounded-2xl px-5 py-6 text-center
+                      bg-white border border-[#ECEBE6] shadow-[0_1px_2px_rgba(20,23,26,0.03)]
+                      hover:-translate-y-[2px] hover:border-[#DEDCD4] hover:shadow-[0_16px_32px_-12px_rgba(20,23,26,0.10)]
+                      dark:bg-[#131316] dark:border-[#222226] dark:shadow-none
+                      dark:hover:border-[#34343B] dark:hover:bg-[#16161A]
+                      transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]
+                    "
+                  >
+                    <p className="text-[14.5px] font-medium text-[#14171A] dark:text-[#F3F3F5] mb-1">{related.name}</p>
+                    <span className="text-[12.5px] text-[#ADABA1] dark:text-[#5C5C66] group-hover:text-[#6B6F73] dark:group-hover:text-[#9A9AA3] transition-colors duration-300">
+                      View details →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── FAQ ────────────────────────────────────────────────────────── */}
+      <section className="py-24 border-t border-[#ECEBE6] dark:border-[#1A1A1E]">
+        <div className="section-container max-w-3xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.55, ease: EASE }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-              Related Technologies
+            <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#B5B3A8] dark:text-[#5C5C66] mb-4">
+              Common questions
+            </p>
+            <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-10">
+              What business owners ask us
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedTechs.map((related) => (
-                <Link
-                  key={related.slug}
-                  href={`/technologies/${related.slug}`}
-                  className="p-4 text-center rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-brand-400 hover:shadow-md transition-all group"
-                >
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-brand-600">
-                    {related.name}
+            <div className="rounded-[24px] border border-[#ECEBE6] dark:border-[#222226] divide-y divide-[#ECEBE6] dark:divide-[#222226] overflow-hidden bg-white dark:bg-[#131316] shadow-[0_1px_2px_rgba(20,23,26,0.03)] dark:shadow-none">
+              {content.faqs.map((faq, idx) => (
+                <details key={idx} className="group px-7 py-6">
+                  <summary className="flex items-center justify-between cursor-pointer list-none">
+                    <span className="text-[15.5px] font-medium text-[#14171A] dark:text-[#F3F3F5] pr-6">{faq.question}</span>
+                    <span className="flex-shrink-0 h-6 w-6 rounded-full border border-[#ECEBE6] dark:border-[#2A2A31] flex items-center justify-center text-[#ADABA1] dark:text-[#73737E] text-[14px] group-open:rotate-45 transition-transform duration-300">
+                      +
+                    </span>
+                  </summary>
+                  <p className="text-[14.5px] leading-relaxed text-[#6B6F73] dark:text-[#9A9AA3] mt-3.5 pr-10">
+                    {faq.answer}
                   </p>
-                  <span className="text-xs text-zinc-500">Learn More →</span>
-                </Link>
+                </details>
               ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Final CTA ────────────────────────────────────────────────── */}
-      <ContactCta />
-    </>
-  );
-}
+      {/* ─── Closing CTA ───────────────────────────────────────────────── */}
+      <section className="py-20 border-t border-[#ECEBE6] dark:border-[#1A1A1E]">
+        <div className="section-container max-w-3xl mx-auto text-center">
+          <h2 className="font-display text-[30px] md:text-[36px] font-semibold tracking-tight text-[#14171A] dark:text-[#F7F7F8] mb-5">
+            Curious how this fits your business?
+          </h2>
+          <p className="text-[16px] leading-relaxed text-[#6B6F73] dark:text-[#9A9AA3] mb-10 max-w-lg mx-auto">
+            We'll walk you through exactly how {tech.name} — and everything around it — works
+            together to support the way you run your stores.
+          </p>
+          <Link
+            href="/contact"
+            className="
+              inline-flex items-center gap-2 px-8 py-3.5 rounded-full
+              bg-[#14171A] text-white text-[14.5px] font-medium
+              hover:bg-[#23262A]
+              dark:bg-[#F3F3F5] dark:text-[#0A0A0B] dark:hover:bg-white
+              shadow-[0_1px_2px_rgba(20,23,26,0.06)]
+              transition-all duration-300 group
+            "
+          >
+            Talk to us
+            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
+      </section>
 
-// ─── Helper: Arrow Down Icon ─────────────────────────────────────────────
-function ArrowDownIcon() {
-  return (
-    <svg
-      className="w-6 h-6 text-zinc-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-    </svg>
+      <ContactCta />
+    </div>
   );
 }

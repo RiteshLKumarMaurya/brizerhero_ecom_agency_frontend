@@ -1,56 +1,160 @@
 /* ============================================================
-   Premium Fonts & Enhanced Variables
+   Premium Fonts
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Syne:wght@400;500;600;700;800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Syne:wght@400;500;600;700;800&display=swap'); */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================================
-   CSS Variables – Premium Light & Dark
+   DESIGN TOKENS — single source of truth
+   Every component must read these variables. Never hardcode a
+   color, shadow, or border inside a reusable component again.
+
+   Naming: --color-{role}        → text/bg/border colors
+           --shadow-{role}       → box-shadow recipes
+           --gradient-{role}     → multi-stop gradients
+
+   Light theme: Apple/Stripe-style — white surfaces, soft shadow,
+   premium contrast, no murkiness.
+   Dark theme:  Luxury Midnight — emerald brand, gold accents,
+   unchanged from the existing premium look.
    ============================================================ */
 :root {
-  --font-inter: 'Inter', system-ui, sans-serif;
-  --font-syne: 'Syne', system-ui, sans-serif;
+  /* ---- Surfaces ---- */
+  --color-background: #ffffff;        /* page background */
+  --color-surface: #f8fafc;           /* secondary/raised surface (sections, subtle panels) */
+  --color-card: rgba(255, 255, 255, 0.90);   /* card fill */
+  --color-card-hover: #f4f4f5;        /* card hover fill / generic hover bg */
+  --color-glass: rgba(255, 255, 255, 0.80);  /* frosted glass fill */
 
-  --bg-primary: #ffffff;
-  --bg-secondary: #fbfbfd;
-  --text-primary: #0a0a0f;
-  --text-secondary: #3a3a44;
-  --text-muted: #8e8e98;
-  --border: #eef2f6;
-  --border-glow: rgba(99,102,241,0.2);
-  --card-bg: rgba(255,255,255,0.96);
-  --hover-bg: #f5f7fb;
-  --card-shadow: 0 8px 30px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.02);
-  --card-shadow-hover: 0 20px 40px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.06);
-  --glass-bg: rgba(255,255,255,0.7);
-  --glass-border: 1px solid rgba(255,255,255,0.5);
-  --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --gradient-secondary: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  /* ---- Borders ---- */
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-glow: rgba(15, 118, 110, 0.20);  /* emerald-tinted border, hover/focus state */
+  --color-glass-border: rgba(0, 0, 0, 0.06);
+
+  /* ---- Text ---- */
+  --color-text-primary: #09090b;
+  --color-text-secondary: #52525b;
+  --color-muted: #71717a;
+
+  /* ---- Brand ---- */
+  --color-primary: #0F766E;           /* emerald, resting */
+  --color-primary-hover: #14B8A6;     /* emerald, interaction/focus */
+  --color-accent: #D4AF37;            /* warm gold — premium accents ONLY, never functional UI */
+  --color-accent-soft: #F0D78C;
+
+  /* ---- Gradients ---- */
+  --gradient-primary: linear-gradient(135deg, #0F766E, #14B8A6);
+  --gradient-accent: linear-gradient(135deg, #D4AF37, #B8860B);
+
+  /* ---- Shadows ---- */
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --shadow-button: 0 4px 16px rgba(15, 118, 110, 0.32);
+  --shadow-button-hover: 0 10px 28px rgba(15, 118, 110, 0.42);
+
+  /* ---- Selection / misc ---- */
+  --color-selection-bg: rgba(15, 118, 110, 0.32);
+  --color-selection-text: #CCFBF1;
+  --color-scrollbar-thumb: #3f3f46;
+  --color-scrollbar-thumb-hover: #52525b;
+  --color-scrollbar-track: var(--color-surface);
+  --color-grid-dot: rgba(0, 0, 0, 0.025);
+
+  /* ---- Operations card (HeroSection) ----
+     These were referenced via var(--x) in HeroSection.tsx but never
+     defined anywhere — every one of them was silently resolving to
+     nothing. Defining them here is what makes the card theme-correct. */
+  --header-border: rgba(0, 0, 0, 0.08);
+  --title-color: var(--color-text-primary);
+  --live-color: #15803D;
+  --row-divide: rgba(0, 0, 0, 0.06);
+  --label-color: var(--color-text-primary);
+  --detail-color: var(--color-text-secondary);
+  --badge-new-bg: rgba(34, 197, 94, 0.14);
+  --badge-new-fg: #15803D;
+  --time-color: var(--color-muted);
+  --footer-bg: rgba(0, 0, 0, 0.025);
+
+  /* ---- Legacy aliases (back-compat — do not add new usages) ---- */
+  --bg-primary: var(--color-background);
+  --bg-secondary: var(--color-surface);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-muted);
+  --border: var(--color-border);
+  --border-glow: var(--color-border-glow);
+  --card-bg: var(--color-card);
+  --hover-bg: var(--color-card-hover);
+  --card-shadow: var(--shadow-card);
+  --card-shadow-hover: var(--shadow-card-hover);
+  --glass-bg: var(--color-glass);
+  --glass-border: 1px solid var(--color-glass-border);
+  --gradient-secondary: var(--gradient-accent);
+  --accent-emerald: var(--color-primary);
+  --accent-emerald-hover: var(--color-primary-hover);
+  --accent-gold: var(--color-accent);
+  --gold-soft: var(--color-accent-soft);
 }
 
 .dark {
-  --bg-primary: #07070c;
-  --bg-secondary: #0e0e16;
-  --text-primary: #fefefe;
-  --text-secondary: #c7c7d0;
-  --text-muted: #7e7e8a;
-  --border: #1e1e2c;
-  --border-glow: rgba(99,102,241,0.3);
-  --card-bg: rgba(18,18,26,0.9);
-  --hover-bg: #1c1c24;
-  --card-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
-  --card-shadow-hover: 0 25px 50px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.4);
-  --glass-bg: rgba(18,18,26,0.65);
-  --glass-border: 1px solid rgba(255,255,255,0.08);
-  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+  /* ---- Surfaces ---- */
+  --color-background: #050506;
+  --color-surface: #121214;
+  --color-card: rgba(14, 14, 16, 0.85);
+  --color-card-hover: #17171B;
+  --color-glass: rgba(5, 5, 6, 0.6);
+
+  /* ---- Borders ---- */
+  --color-border: rgba(250, 250, 250, 0.06);
+  --color-border-glow: rgba(20, 184, 166, 0.3);
+  --color-glass-border: rgba(250, 250, 250, 0.05);
+
+  /* ---- Text ---- */
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #C9C9CE;
+  --color-muted: #6B6B74;
+
+  /* ---- Brand ---- */
+  --color-primary: #0F766E;
+  --color-primary-hover: #2DD4BF;      /* brighter emerald reads better on near-black */
+  --color-accent: #D4AF37;
+  --color-accent-soft: #F0D78C;
+
+  /* ---- Gradients ---- */
+  --gradient-primary: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+  --gradient-accent: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+
+  /* ---- Shadows ---- */
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 28px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(15, 118, 110, 0.16);
+  --shadow-button: 0 4px 16px rgba(15, 118, 110, 0.32);
+  --shadow-button-hover: 0 10px 28px rgba(15, 118, 110, 0.42);
+
+  /* ---- Selection / misc ---- */
+  --color-selection-bg: rgba(20, 184, 166, 0.35);
+  --color-selection-text: #99F6E4;
+  --color-scrollbar-thumb: #27272a;
+  --color-scrollbar-thumb-hover: #3f3f46;
+  --color-grid-dot: rgba(255, 255, 255, 0.04);
+
+  /* ---- Operations card (HeroSection) ---- */
+  --header-border: rgba(255, 255, 255, 0.07);
+  --title-color: rgba(255, 255, 255, 0.92);
+  --live-color: #86EFAC;
+  --row-divide: rgba(255, 255, 255, 0.05);
+  --label-color: rgba(255, 255, 255, 0.95);
+  --detail-color: rgba(255, 255, 255, 0.55);
+  --badge-new-bg: rgba(34, 197, 94, 0.16);
+  --badge-new-fg: #86EFAC;
+  --time-color: rgba(255, 255, 255, 0.45);
+  --footer-bg: rgba(255, 255, 255, 0.03);
 }
 
 /* ============================================================
-   Base – Premium Feel
+   Base — Premium Feel
    ============================================================ */
 @layer base {
   * {
@@ -63,44 +167,46 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
     font-family: var(--font-inter);
     font-size: 16px;
     line-height: 1.6;
-    background-image: radial-gradient(circle at 10% 20%, rgba(99,102,241,0.02) 0%, transparent 40%);
+    /* Subtle emerald + gold ambient lighting — never overpowers content */
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(15, 118, 110, 0.07) 0%, transparent 45%),
+      radial-gradient(circle at 88% 78%, rgba(212, 175, 55, 0.035) 0%, transparent 42%);
   }
   .dark body {
-    background-image: radial-gradient(circle at 80% 30%, rgba(99,102,241,0.05) 0%, transparent 50%);
+    background-image:
+      radial-gradient(circle at 82% 25%, rgba(20, 184, 166, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 10% 85%, rgba(212, 175, 55, 0.03) 0%, transparent 45%);
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-syne);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.022em;
     line-height: 1.2;
+    color: var(--color-text-primary);
   }
   p {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     line-height: 1.65;
   }
   a {
-    color: #6366f1;
-    transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    color: var(--color-primary);
+    transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
     font-weight: 500;
   }
   a:hover {
-    color: #4f46e5;
+    color: var(--color-primary-hover);
     text-decoration: underline;
     text-underline-offset: 4px;
   }
   ::selection {
-    background: rgba(99,102,241,0.2);
-    color: #4f46e5;
-  }
-  .dark ::selection {
-    background: rgba(99,102,241,0.35);
-    color: #a5b4fc;
+    background: var(--color-selection-bg);
+    color: var(--color-selection-text);
   }
 
   /* Premium Scrollbar */
@@ -109,23 +215,32 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--color-surface);
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--color-scrollbar-thumb);
     border-radius: 10px;
-    border: 2px solid var(--bg-secondary);
+    border: 2px solid var(--color-surface);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--color-scrollbar-thumb-hover);
   }
-  .dark ::-webkit-scrollbar-thumb {
-    background: #334155;
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
-  }
+}
+
+/* ============================================================
+   Semantic surface/text utility classes
+   Use these in JSX instead of bg-zinc-*, text-white, etc.
+   (Also exposed as real Tailwind utilities — see tailwind.config.js notes)
+   ============================================================ */
+@layer utilities {
+  .bg-surface { background-color: var(--color-background); }
+  .bg-card { background-color: var(--color-card); }
+  .bg-raised { background-color: var(--color-surface); }
+  .text-primary { color: var(--color-text-primary); }
+  .text-secondary { color: var(--color-text-secondary); }
+  .text-muted { color: var(--color-muted); }
+  .border-default { border-color: var(--color-border); }
 }
 
 /* ============================================================
@@ -134,39 +249,53 @@
 @layer components {
   /* Glassmorphic Cards */
   .card-base {
-    background-color: var(--card-bg);
+    background-color: var(--color-card);
     backdrop-filter: blur(2px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--color-border);
     border-radius: 1.5rem;
-    transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    box-shadow: var(--card-shadow);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-card);
   }
   .card-base:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: var(--card-shadow-hover);
-    border-color: var(--border-glow);
-    background-color: var(--hover-bg);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--color-border-glow);
+    background-color: var(--color-card-hover);
   }
 
   /* Glass card (frosted) */
   .card-glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    border: var(--glass-border);
+    background: var(--color-glass);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--color-glass-border);
     border-radius: 1.75rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(212, 175, 55, 0.05);
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .card-glass:hover {
-    transform: translateY(-3px);
-    background: rgba(255,255,255,0.8);
-    border-color: rgba(99,102,241,0.4);
-  }
-  .dark .card-glass:hover {
-    background: rgba(30,30,40,0.8);
+    transform: translateY(-2px);
+    background: var(--color-card-hover);
+    border-color: var(--color-border-glow);
   }
 
-  /* Premium Buttons */
+  /* Card with hover-lift, padded — same primitive as card-base, kept as a
+     named alias so existing markup using `card-hover` keeps working and
+     now actually themes correctly instead of being hardcoded dark. */
+  .card-hover {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--color-border-glow);
+  }
+
+  /* Premium Buttons — single definition each, no duplicates */
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -176,10 +305,10 @@
     border-radius: 2rem;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     background: var(--gradient-primary);
-    color: white;
-    box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+    color: #FAFAFA;
+    box-shadow: var(--shadow-button);
     position: relative;
     overflow: hidden;
     z-index: 1;
@@ -191,8 +320,8 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    transition: left 0.6s ease;
     z-index: -1;
   }
   .btn-primary:hover::before {
@@ -200,7 +329,7 @@
   }
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(79,70,229,0.45);
+    box-shadow: var(--shadow-button-hover);
   }
   .btn-primary:active {
     transform: translateY(1px);
@@ -215,23 +344,18 @@
     border-radius: 2rem;
     font-weight: 600;
     font-size: 0.875rem;
-    transition: all 0.25s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     background-color: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--text-secondary);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-secondary);
     backdrop-filter: blur(4px);
   }
   .btn-secondary:hover {
-    background-color: rgba(99,102,241,0.08);
-    border-color: #6366f1;
-    color: #6366f1;
+    background-color: rgba(15, 118, 110, 0.1);
+    border-color: var(--color-primary-hover);
+    color: var(--color-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-  .dark .btn-secondary:hover {
-    background-color: rgba(99,102,241,0.15);
-    border-color: #818cf8;
-    color: #a5b4fc;
+    box-shadow: 0 6px 16px rgba(15, 118, 110, 0.14);
   }
 
   /* Inputs - Premium */
@@ -240,24 +364,25 @@
     padding: 0.9rem 1.2rem;
     border-radius: 1.25rem;
     font-size: 0.9rem;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    transition: all 0.2s;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
     backdrop-filter: blur(4px);
   }
   .input-base:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
-    transform: scale(1.01);
+    border-color: var(--color-primary-hover);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
   }
   .input-base::placeholder {
-    color: var(--text-muted);
+    color: var(--color-muted);
     font-weight: 400;
   }
 
-  /* Badges - with shine */
+  /* Badges — status colors are intentionally NOT theme-brand tokens;
+     they keep fixed semantic meaning (green=success etc.) but each still
+     has an explicit light/dark pair so they never look muddy in either mode. */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -267,50 +392,62 @@
     font-size: 0.75rem;
     font-weight: 600;
     backdrop-filter: blur(2px);
-    transition: all 0.2s;
+    transition: all 0.25s ease;
   }
   .badge-green {
-    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-    color: #065f46;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    background: rgba(16, 185, 129, 0.16);
+    color: #6EE7B7;
+    border: 1px solid rgba(16, 185, 129, 0.22);
   }
   .dark .badge-green {
-    background: rgba(16,185,129,0.2);
-    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.22);
+    color: #86EFAC;
   }
   .badge-amber {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    color: #92400e;
+    background: rgba(245, 158, 11, 0.16);
+    color: #FCD34D;
+    border: 1px solid rgba(245, 158, 11, 0.22);
   }
   .dark .badge-amber {
-    background: rgba(245,158,11,0.2);
-    color: #fcd34d;
+    background: rgba(245, 158, 11, 0.22);
+    color: #FDE68A;
   }
   .badge-red {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
+    background: rgba(239, 68, 68, 0.16);
+    color: #FCA5A5;
+    border: 1px solid rgba(239, 68, 68, 0.22);
   }
   .dark .badge-red {
-    background: rgba(239,68,68,0.2);
-    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.22);
+    color: #FECACA;
   }
   .badge-blue {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    color: #1e3a8a;
+    background: rgba(59, 130, 246, 0.16);
+    color: #93C5FD;
+    border: 1px solid rgba(59, 130, 246, 0.22);
   }
   .dark .badge-blue {
-    background: rgba(59,130,246,0.2);
-    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.22);
+    color: #BFDBFE;
   }
   .badge-brand {
     background: var(--gradient-primary);
-    color: white;
-    box-shadow: 0 2px 6px rgba(79,70,229,0.25);
+    color: #FAFAFA;
+    box-shadow: 0 2px 10px rgba(15, 118, 110, 0.3);
   }
   .badge-zinc {
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+  /* Reserved strictly for premium/enterprise-tier labeling
+     ("Premium", "Enterprise", "$50K+ Build") — the one place gold appears
+     as a badge fill */
+  .badge-gold {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%);
+    color: var(--color-accent-soft);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.12);
   }
 
   /* Sidebar links - premium */
@@ -322,23 +459,44 @@
     border-radius: 1rem;
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    color: var(--color-text-secondary);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
   }
   .sidebar-link:hover {
-    background-color: var(--hover-bg);
-    color: var(--text-primary);
-    transform: translateX(4px);
+    background-color: var(--color-card-hover);
+    color: var(--color-text-primary);
+    transform: translateX(3px);
   }
   .sidebar-link.active {
     background: var(--gradient-primary);
-    color: white;
-    box-shadow: 0 6px 14px rgba(79,70,229,0.3);
+    color: #FAFAFA;
+    box-shadow: 0 6px 16px rgba(15, 118, 110, 0.32);
   }
-  .dark .sidebar-link.active {
-    background: var(--gradient-primary);
-    color: white;
+
+  /* ---- Layout primitives (moved into the components layer; were
+     previously bare/un-layered rules at the bottom of the file) ---- */
+  .page-hero {
+    @apply pt-24 pb-20;
+  }
+  .page-section {
+    @apply py-20;
+  }
+  .page-section-sm {
+    @apply py-16;
+  }
+  .page-section-lg {
+    @apply py-24;
+  }
+  .section-container {
+    @apply max-w-7xl mx-auto px-5 sm:px-6 lg:px-8;
+  }
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-widest uppercase mb-3 block;
+    color: var(--color-accent);
   }
 }
 
@@ -362,7 +520,6 @@
     overflow: hidden;
   }
 
-  /* Fade-in animation for cards */
   @keyframes fadeUp {
     0% {
       opacity: 0;
@@ -374,7 +531,7 @@
     }
   }
   .animate-fade-up {
-    animation: fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+    animation: fadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   @keyframes shimmer {
@@ -385,47 +542,21 @@
       background-position: 200% 0;
     }
   }
+  /* Warm gold shimmer — the one place the luxury highlight moves;
+     reserved for the rare standout phrase, not body copy */
   .shimmer-text {
-    background: linear-gradient(90deg, #4f46e5 20%, #a5b4fc 50%, #4f46e5 80%);
+    background: linear-gradient(90deg, #D4AF37 20%, #F5E1A4 50%, #D4AF37 80%);
     background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    animation: shimmer 3s linear infinite;
+    animation: shimmer 4s linear infinite;
   }
-}
-/* Add these to your globals.css or tailwind layers */
 
-.section-container {
-  @apply max-w-7xl mx-auto px-5 sm:px-6 lg:px-8;
-}
-
-.section-padding {
-  @apply py-16 md:py-24;
-}
-
-.eyebrow {
-  @apply text-xs font-semibold tracking-widest text-brand-500 uppercase mb-3 block;
-}
-
-.btn-primary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-semibold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all;
-}
-
-.card-hover {
-  @apply rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-}
-
-.bg-grid-pattern {
-  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-.dark .bg-grid-pattern {
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 1px);
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, var(--color-grid-dot) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
 }
 
 img {

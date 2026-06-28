@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { ContactPageClient } from './ContactPageClient';
 
 export const metadata: Metadata = {
-  title: 'Contact — Book a Free Consultation',
-  description: 'Ready to build? Tell us about your project and we\'ll get back to you within 24 hours with a tailored proposal.',
+  title: 'Contact — BrizerHero',
+  description: 'Start a conversation with BrizerHero, a technology partner built exclusively for grocery, bakery, dairy, and specialty food businesses across the United States.',
 };
 
 export default function ContactPage() {

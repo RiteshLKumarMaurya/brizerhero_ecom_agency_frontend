@@ -1,97 +1,174 @@
 import Link from 'next/link';
 import { Logo } from '@/components/common/Logo';
 import {
-  Github, Twitter, Linkedin, Instagram, MapPin, Mail, Phone,
-  Briefcase, Users, Layers, FolderKanban, MessageCircle,
-  ShieldCheck, FileText, RefreshCw, Trash2, Clock
+  Github, Twitter, Linkedin, Instagram,
+  MapPin, Mail, Phone, Clock,
+  Briefcase, Users, Layers, FolderKanban,
+  MessageCircle, ShieldCheck, FileText,
 } from 'lucide-react';
 
 const socialLinks = [
-  { icon: Github, href: 'https://github.com/RiteshLKumarMaurya', label: 'GitHub' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Linkedin, href: 'https://www.linkedin.com/in/ritesh-kumar-46550a292', label: 'LinkedIn' },
-  { icon: Instagram, href: 'https://www.instagram.com/brizerhero.com_agency', label: 'Instagram' },
+  { icon: Github,    href: 'https://github.com/RiteshLKumarMaurya',                    label: 'GitHub' },
+  { icon: Twitter,   href: '#',                                                          label: 'Twitter' },
+  { icon: Linkedin,  href: 'https://www.linkedin.com/in/ritesh-kumar-46550a292',        label: 'LinkedIn' },
+  { icon: Instagram, href: 'https://www.instagram.com/brizerhero.com_agency',           label: 'Instagram' },
 ];
 
-// All website links – now neatly organised under "Legal & Quick Links"
 const legalLinks = [
-  { name: 'About Us', href: '/about', icon: Users },
-  { name: 'Services', href: '/services', icon: Layers },
-  { name: 'Portfolio', href: '/projects', icon: FolderKanban },
-  { name: 'Contact', href: '/contact', icon: MessageCircle },
-  { name: 'Privacy Policy', href: '/privacy', icon: ShieldCheck },
-  { name: 'Terms & Conditions', href: '/terms', icon: FileText },
+  { name: 'About Us',          href: '/about',        icon: Users },
+  { name: 'Services',          href: '/services',     icon: Layers },
+  { name: 'Portfolio',         href: '/projects',     icon: FolderKanban },
+  { name: 'Contact',           href: '/contact',      icon: MessageCircle },
+  { name: 'Privacy Policy',    href: '/privacy',      icon: ShieldCheck },
+  { name: 'Terms & Conditions',href: '/terms',        icon: FileText },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-      <div className="section-container py-10 md:py-12">
-        {/* Prominent Business Info Card – Now BrizerHero */}
-        <div className="mb-12 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900/50 p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            {/* Left side: Logo + tagline + founder */}
+    <footer
+      className="
+        border-t border-default
+        bg-surface
+      "
+    >
+      <div className="section-container py-10 md:py-14">
+
+        {/* ── Business info card ──────────────────────────────────────── */}
+        <div
+          className="
+            mb-12 rounded-2xl p-6 md:p-7
+            border border-default
+            bg-card
+            shadow-sm dark:shadow-none
+          "
+        >
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+
+            {/* Left: logo + tagline + founder */}
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
+              {/* Logo + name */}
+              <div className="flex items-center gap-3 mb-4">
                 <Logo variant="icon" />
-                <span className="text-xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
+                <span
+                  className="
+                    text-xl font-bold tracking-tight
+                    text-primary
+                  "
+                >
                   BrizerHero
                 </span>
               </div>
-              <p className="text-zinc-600 dark:text-zinc-300 text-sm max-w-md mb-4">
-                We craft scalable, fast, and modern apps, websites, and software for ambitious businesses.
+
+              {/* Tagline — grocery-specific */}
+              <p className="text-sm text-secondary max-w-sm leading-relaxed mb-5">
+                Digital operations platforms built exclusively for grocery, bakery, dairy, and specialty food businesses across India.
               </p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                <span className="inline-flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-medium">
-                  <Briefcase className="w-4 h-4" />
+
+              {/* Founder */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+                <span
+                  className="
+                    inline-flex items-center gap-1.5 font-medium
+                    text-brand-600 dark:text-brand-400
+                  "
+                >
+                  <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />
                   Ritesh Kumar Maurya
                 </span>
-                <span className="text-zinc-400">•</span>
-                <span className="text-zinc-500 dark:text-zinc-400">Co-Founder & CEO</span>
+                <span className="text-muted" aria-hidden="true">·</span>
+                <span className="text-secondary">Co-Founder &amp; CEO</span>
               </div>
             </div>
 
-            {/* Right side: Your actual contact card */}
-            <div className="bg-white dark:bg-zinc-900/80 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 min-w-[240px] shadow-sm">
-              <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5" />
-                Contact & Hours
+            {/* Right: contact card */}
+            <div
+              className="
+                rounded-xl p-4 min-w-[240px]
+                border border-default
+                bg-surface
+                shadow-sm dark:shadow-none
+              "
+            >
+              <h4
+                className="
+                  text-[10px] font-semibold uppercase tracking-[0.12em]
+                  text-muted
+                  mb-3 flex items-center gap-2
+                "
+              >
+                <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                Contact &amp; Hours
               </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-start gap-2">
-                  <Phone className="w-4 h-4 mt-0.5 text-brand-500" />
+              <ul className="space-y-2.5 text-sm" role="list">
+                {/* Phone */}
+                <li className="flex items-start gap-2.5">
+                  <Phone
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 text-brand-500"
+                    aria-hidden="true"
+                  />
                   <div>
-                    <a href="https://wa.me/918651600737" className="hover:text-brand-500 font-medium">
+                    <a
+                      href="https://wa.me/918651600737"
+                      className="
+                        font-medium text-primary
+                        hover:text-brand-600 dark:hover:text-brand-400
+                        transition-colors
+                      "
+                    >
                       +91 8651600737
                     </a>
-                    <p className="text-xs text-zinc-400">Mon-Sat, 9AM-7PM</p>
+                    <p className="text-xs text-muted mt-0.5">
+                      Mon–Sat, 9 AM – 7 PM
+                    </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-brand-500" />
-                  <a href="mailto:brizerhero@gmail.com" className="hover:text-brand-500 truncate">
+                </li>
+                {/* Email */}
+                <li className="flex items-center gap-2.5">
+                  <Mail
+                    className="w-4 h-4 flex-shrink-0 text-brand-500"
+                    aria-hidden="true"
+                  />
+                  <a
+                    href="mailto:brizerhero@gmail.com"
+                    className="
+                      text-secondary truncate
+                      hover:text-brand-600 dark:hover:text-brand-400
+                      transition-colors
+                    "
+                  >
                     brizerhero@gmail.com
                   </a>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 mt-0.5 text-brand-500" />
-                  <span className="text-zinc-600 dark:text-zinc-300">
+                </li>
+                {/* Address */}
+                <li className="flex items-start gap-2.5">
+                  <MapPin
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 text-brand-500"
+                    aria-hidden="true"
+                  />
+                  <address className="not-italic text-secondary text-xs leading-relaxed">
                     Harigaon, 802162, near Mahathin Ma Temple, Bihar, India
-                  </span>
-                </div>
-              </div>
+                  </address>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
 
-        {/* All links in one clean Legal section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Social & GST */}
+        {/* ── Links row ────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+
+          {/* Social + GST */}
           <div>
-            <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-4">
+            <h3
+              className="
+                text-[10px] font-semibold uppercase tracking-[0.12em]
+                text-muted
+                mb-4
+              "
+            >
               Connect
             </h3>
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-2.5 mb-5" role="list" aria-label="Social media">
               {socialLinks.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
@@ -99,47 +176,86 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-9 h-9 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-brand-500 hover:border-brand-500/30 transition-all"
+                  role="listitem"
+                  className="
+                    w-9 h-9 rounded-full
+                    flex items-center justify-center
+                    border text-muted
+                    transition-all duration-150
+                    border-default
+                    hover:text-brand-600 dark:hover:text-brand-400
+                    hover:border-brand-300 dark:hover:border-brand-700
+                    hover:bg-brand-50 dark:hover:bg-brand-950/20
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-brand-500 focus-visible:ring-offset-1
+                  "
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </a>
               ))}
             </div>
-            <div className="text-xs text-zinc-400">
+            <p className="text-[11px] text-muted font-medium tracking-wide">
               GST: OSMPK5329E1ZN
-            </div>
+            </p>
           </div>
 
-          {/* Legal & Quick Links (all website pages) */}
+          {/* Legal & quick links */}
           <div className="md:col-span-3">
-            <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-4">
-              Legal & Quick Links
+            <h3
+              className="
+                text-[10px] font-semibold uppercase tracking-[0.12em]
+                text-muted
+                mb-4
+              "
+            >
+              Legal &amp; Quick Links
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-3">
-              {legalLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-brand-500 transition-colors flex items-center gap-2 group"
-                >
-                  <link.icon className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100" />
-                  <span>{link.name}</span>
-                </Link>
-              ))}
-            </div>
+            <nav aria-label="Footer navigation">
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-3">
+                {legalLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="
+                        group inline-flex items-center gap-2
+                        text-sm text-secondary
+                        hover:text-brand-600 dark:hover:text-brand-400
+                        transition-colors duration-150
+                        focus-visible:outline-none focus-visible:rounded
+                        focus-visible:ring-2 focus-visible:ring-brand-500
+                      "
+                    >
+                      <link.icon
+                        className="w-3.5 h-3.5 flex-shrink-0 opacity-50 group-hover:opacity-100 transition-opacity"
+                        aria-hidden="true"
+                      />
+                      <span>{link.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </div>
 
-        {/* Footer bottom */}
-        <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-zinc-400">
+        {/* ── Bottom bar ───────────────────────────────────────────────── */}
+        <div
+          className="
+            pt-6 border-t
+            border-default
+            flex flex-col md:flex-row justify-between items-center gap-3
+            text-xs text-muted
+          "
+        >
           <div className="flex items-center gap-1">
-            <span>© 2021 - {new Date().getFullYear()} BrizerHero.</span>
+            <span>© 2021 – {new Date().getFullYear()} BrizerHero.</span>
             <span>All rights reserved.</span>
           </div>
           <div className="flex items-center gap-1">
             <span>Made with</span>
-            <span className="text-red-500">❤️</span>
-            <span>in Bihari</span>
+            <span className="text-red-500" aria-label="love">❤️</span>
+
+            <span>by Ritesh Kumar Maurya (BrizerHero Founder)</span>
           </div>
         </div>
       </div>
