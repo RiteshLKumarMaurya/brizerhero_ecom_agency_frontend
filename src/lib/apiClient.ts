@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8057';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.brizerhero.com';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
