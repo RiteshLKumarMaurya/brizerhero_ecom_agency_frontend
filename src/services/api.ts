@@ -9,7 +9,8 @@ import type {
   LogoutRequest, UserProfileResponse, AdminUserSummaryResponse,NotificationResponse,
   FeatureResponse, LinkResponse, WebLinkResponse, UpdateContactStatusRequest,
   MediaResponse,
-ContactRequestStatsResponse,ContactRequestAdminUpdateRequest,LeadStatus,ContactRequestSearchRequest
+ContactRequestStatsResponse,ContactRequestAdminUpdateRequest,LeadStatus,ContactRequestSearchRequest,
+ProjectTechnologyResponse, ProjectExternalLinkResponse, AddProjectTechnologyRequest, AddProjectLinkRequest
 } from '@/types';
 
 import { 
@@ -219,6 +220,19 @@ getUserById: (id: number) => apiClient.get<ApiResponse<UserProfileResponse>>(`/a
   disableProject: (id: number) => apiClient.patch<ApiResponse<void>>(`/api/v1/admin/projects/${id}/disable`),
   featureProject: (id: number) => apiClient.patch<ApiResponse<void>>(`/api/v1/admin/projects/${id}/feature`),
   unfeatureProject: (id: number) => apiClient.patch<ApiResponse<void>>(`/api/v1/admin/projects/${id}/unfeature`),
+
+  // ── Project Technologies (add/remove one at a time — same pattern as
+  //    addServiceToPackage / removeServiceFromPackage) ───────────────
+  addTechnologyToProject: (projectId: number, data: AddProjectTechnologyRequest) =>
+    apiClient.post<ApiResponse<ProjectTechnologyResponse>>(`/api/v1/admin/projects/${projectId}/technologies`, data),
+  removeTechnologyFromProject: (projectId: number, mappingId: number) =>
+    apiClient.delete<ApiResponse<void>>(`/api/v1/admin/projects/${projectId}/technologies/${mappingId}`),
+
+  // ── Project External Links (add/remove one at a time) ─────────────
+  addLinkToProject: (projectId: number, data: AddProjectLinkRequest) =>
+    apiClient.post<ApiResponse<ProjectExternalLinkResponse>>(`/api/v1/admin/projects/${projectId}/links`, data),
+  removeLinkFromProject: (projectId: number, mappingId: number) =>
+    apiClient.delete<ApiResponse<void>>(`/api/v1/admin/projects/${projectId}/links/${mappingId}`),
 
   // ── Project Bundles ────────────────────────────────────────
   getBundles: (params?: { page?: number; size?: number }) =>
@@ -468,7 +482,3 @@ export const notificationsApi = {
   deleteOne: (id: number) =>
     apiClient.delete<ApiResponse<void>>(`/api/v1/notifications/me/${id}`),
 };
-
-
-
-

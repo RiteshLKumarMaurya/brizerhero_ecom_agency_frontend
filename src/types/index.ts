@@ -166,6 +166,16 @@ export interface ProjectTechnologyResponse {
   displayOrder: number;
 }
 
+// Mirrors ProjectTechnologyResponse — this is the join-row wrapper that
+// exposes its own `id` (the mapping id), which is what the dedicated
+// add/remove/reorder endpoints need. Previously this field was typed as
+// plain LinkResponse[], which had no mapping id to remove/reorder by.
+export interface ProjectExternalLinkResponse {
+  id: number;
+  link: LinkResponse;
+  displayOrder: number;
+}
+
 export interface ProjectResponse {
   id: number;
   title: string;
@@ -174,7 +184,7 @@ export interface ProjectResponse {
   fullDescription: string;
   thumbImage: MediaResponse | null;
   bannerImages: ProjectBannerImageResponse[];   // ✅ changed from MediaResponse[]
-  externalLinks: LinkResponse[];
+  externalLinks: ProjectExternalLinkResponse[]; // ✅ changed from LinkResponse[]
   featured: boolean;
   active: boolean;
   technologies: ProjectTechnologyResponse[];    // ✅ changed from TechnologyResponse[]
@@ -210,6 +220,28 @@ export type ProjectDeliverableType =
   | 'DELIVERY_APP'
   | 'INVENTORY_SYSTEM'
   | 'FULL_ECOSYSTEM';
+
+// ── Project ↔ Technology / Link association requests ────────────
+// Used by the dedicated add endpoints:
+//   POST /admin/projects/{id}/technologies
+//   POST /admin/projects/{id}/links
+export interface AddProjectTechnologyRequest {
+  technologyId: number;
+  displayOrder: number;
+}
+
+export interface AddProjectLinkRequest {
+  linkId: number;
+  displayOrder: number;
+}
+
+// Used by the dedicated reorder endpoints (same shape for both):
+//   PATCH /admin/projects/{id}/technologies/reorder
+//   PATCH /admin/projects/{id}/links/reorder
+export interface ReorderAssociationItem {
+  mappingId: number;
+  displayOrder: number;
+}
 
 
 // ============================================================

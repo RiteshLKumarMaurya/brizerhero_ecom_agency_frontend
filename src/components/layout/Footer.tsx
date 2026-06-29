@@ -255,7 +255,7 @@ export function Footer() {
             <span>Made with</span>
             <span className="text-red-500" aria-label="love">❤️</span>
 
-            <span>by Ritesh Kumar Maurya (BrizerHero Founder)</span>
+            <span>Built for Grocery Owners only!</span>
           </div>
         </div>
       </div>

@@ -23,15 +23,16 @@
    ============================================================ */
 :root {
   /* ---- Surfaces ---- */
-  --color-background: #ffffff;        /* page background */
-  --color-surface: #f8fafc;           /* secondary/raised surface (sections, subtle panels) */
-  --color-card: rgba(255, 255, 255, 0.90);   /* card fill */
-  --color-card-hover: #f4f4f5;        /* card hover fill / generic hover bg */
-  --color-glass: rgba(255, 255, 255, 0.80);  /* frosted glass fill */
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-card: rgba(255, 255, 255, 0.90);
+  --color-card-hover: #f4f4f5;
+  --color-glass: rgba(255, 255, 255, 0.80);
 
   /* ---- Borders ---- */
   --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-glow: rgba(15, 118, 110, 0.20);  /* emerald-tinted border, hover/focus state */
+  --color-border-strong: rgba(0, 0, 0, 0.14);
+  --color-border-glow: rgba(15, 118, 110, 0.20);
   --color-glass-border: rgba(0, 0, 0, 0.06);
 
   /* ---- Text ---- */
@@ -40,10 +41,18 @@
   --color-muted: #71717a;
 
   /* ---- Brand ---- */
-  --color-primary: #0F766E;           /* emerald, resting */
-  --color-primary-hover: #14B8A6;     /* emerald, interaction/focus */
-  --color-accent: #D4AF37;            /* warm gold — premium accents ONLY, never functional UI */
+  --color-primary: #0F766E;
+  --color-primary-hover: #14B8A6;
+  --color-accent: #D4AF37;
   --color-accent-soft: #F0D78C;
+
+  /* ---- Inverse surface (dark band on light page) ---- */
+  --color-inverse-bg: #111113;
+  --color-inverse-surface: #1c1c1f;
+  --color-inverse-border: rgba(255, 255, 255, 0.07);
+  --color-inverse-text-primary: #fafafa;
+  --color-inverse-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-inverse-text-muted: rgba(255, 255, 255, 0.38);
 
   /* ---- Gradients ---- */
   --gradient-primary: linear-gradient(135deg, #0F766E, #14B8A6);
@@ -58,15 +67,12 @@
   /* ---- Selection / misc ---- */
   --color-selection-bg: rgba(15, 118, 110, 0.32);
   --color-selection-text: #CCFBF1;
-  --color-scrollbar-thumb: #3f3f46;
-  --color-scrollbar-thumb-hover: #52525b;
+  --color-scrollbar-thumb: #d4d4d8;
+  --color-scrollbar-thumb-hover: #a1a1aa;
   --color-scrollbar-track: var(--color-surface);
   --color-grid-dot: rgba(0, 0, 0, 0.025);
 
-  /* ---- Operations card (HeroSection) ----
-     These were referenced via var(--x) in HeroSection.tsx but never
-     defined anywhere — every one of them was silently resolving to
-     nothing. Defining them here is what makes the card theme-correct. */
+  /* ---- Operations card (HeroSection) ---- */
   --header-border: rgba(0, 0, 0, 0.08);
   --title-color: var(--color-text-primary);
   --live-color: #15803D;
@@ -109,6 +115,7 @@
 
   /* ---- Borders ---- */
   --color-border: rgba(250, 250, 250, 0.06);
+  --color-border-strong: rgba(250, 250, 250, 0.10);
   --color-border-glow: rgba(20, 184, 166, 0.3);
   --color-glass-border: rgba(250, 250, 250, 0.05);
 
@@ -119,9 +126,17 @@
 
   /* ---- Brand ---- */
   --color-primary: #0F766E;
-  --color-primary-hover: #2DD4BF;      /* brighter emerald reads better on near-black */
+  --color-primary-hover: #2DD4BF;
   --color-accent: #D4AF37;
   --color-accent-soft: #F0D78C;
+
+  /* ---- Inverse surface (dark band is same as page in dark mode) ---- */
+  --color-inverse-bg: #0d0d0f;
+  --color-inverse-surface: #161618;
+  --color-inverse-border: rgba(255, 255, 255, 0.07);
+  --color-inverse-text-primary: #fafafa;
+  --color-inverse-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-inverse-text-muted: rgba(255, 255, 255, 0.38);
 
   /* ---- Gradients ---- */
   --gradient-primary: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
@@ -172,7 +187,6 @@
     font-family: var(--font-inter);
     font-size: 16px;
     line-height: 1.6;
-    /* Subtle emerald + gold ambient lighting — never overpowers content */
     background-image:
       radial-gradient(circle at 12% 18%, rgba(15, 118, 110, 0.07) 0%, transparent 45%),
       radial-gradient(circle at 88% 78%, rgba(212, 175, 55, 0.035) 0%, transparent 42%);
@@ -230,8 +244,6 @@
 
 /* ============================================================
    Semantic surface/text utility classes
-   Use these in JSX instead of bg-zinc-*, text-white, etc.
-   (Also exposed as real Tailwind utilities — see tailwind.config.js notes)
    ============================================================ */
 @layer utilities {
   .bg-surface { background-color: var(--color-background); }
@@ -241,6 +253,17 @@
   .text-secondary { color: var(--color-text-secondary); }
   .text-muted { color: var(--color-muted); }
   .border-default { border-color: var(--color-border); }
+  .border-strong { border-color: var(--color-border-strong); }
+
+  /* ── Inverse surface — dark band that must look premium in BOTH themes.
+     In light mode this renders a deep charcoal panel.
+     In dark mode it matches the near-black page. ── */
+  .bg-inverse         { background-color: var(--color-inverse-bg); }
+  .bg-inverse-surface { background-color: var(--color-inverse-surface); }
+  .border-inverse     { border-color: var(--color-inverse-border); }
+  .text-inverse-primary   { color: var(--color-inverse-text-primary); }
+  .text-inverse-secondary { color: var(--color-inverse-text-secondary); }
+  .text-inverse-muted     { color: var(--color-inverse-text-muted); }
 }
 
 /* ============================================================
@@ -278,9 +301,7 @@
     border-color: var(--color-border-glow);
   }
 
-  /* Card with hover-lift, padded — same primitive as card-base, kept as a
-     named alias so existing markup using `card-hover` keeps working and
-     now actually themes correctly instead of being hardcoded dark. */
+  /* Card with hover-lift, padded */
   .card-hover {
     background-color: var(--color-card);
     border: 1px solid var(--color-border);
@@ -293,6 +314,26 @@
     transform: translateY(-2px);
     box-shadow: var(--shadow-card-hover);
     border-color: var(--color-border-glow);
+  }
+
+  /* ── Skeleton pulse fill — theme-aware ── */
+  .skeleton-fill {
+    background-color: var(--color-surface);
+  }
+  .dark .skeleton-fill {
+    background-color: #27272a;
+  }
+
+  /* ── Inverse card — used inside dark/inverse-bg sections ──
+     Appears as a lighter panel on dark backgrounds in both themes. */
+  .card-inverse {
+    background-color: var(--color-inverse-surface);
+    border: 1px solid var(--color-inverse-border);
+    border-radius: 1rem;
+    transition: border-color 0.25s ease;
+  }
+  .card-inverse:hover {
+    border-color: rgba(255, 255, 255, 0.14);
   }
 
   /* Premium Buttons — single definition each, no duplicates */
@@ -358,6 +399,43 @@
     box-shadow: 0 6px 16px rgba(15, 118, 110, 0.14);
   }
 
+  /* ── CTA buttons inside inverse/dark sections ── */
+  .btn-inverse-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    color: #09090b;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-inverse-primary:hover {
+    background-color: #f4f4f5;
+  }
+
+  .btn-inverse-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    background-color: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.80);
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-inverse-outline:hover {
+    border-color: rgba(255, 255, 255, 0.40);
+    color: #ffffff;
+  }
+
   /* Inputs - Premium */
   .input-base {
     width: 100%;
@@ -380,9 +458,7 @@
     font-weight: 400;
   }
 
-  /* Badges — status colors are intentionally NOT theme-brand tokens;
-     they keep fixed semantic meaning (green=success etc.) but each still
-     has an explicit light/dark pair so they never look muddy in either mode. */
+  /* Badges */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -395,40 +471,44 @@
     transition: all 0.25s ease;
   }
   .badge-green {
-    background: rgba(16, 185, 129, 0.16);
-    color: #6EE7B7;
-    border: 1px solid rgba(16, 185, 129, 0.22);
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.20);
   }
   .dark .badge-green {
     background: rgba(16, 185, 129, 0.22);
     color: #86EFAC;
+    border-color: rgba(16, 185, 129, 0.22);
   }
   .badge-amber {
-    background: rgba(245, 158, 11, 0.16);
-    color: #FCD34D;
-    border: 1px solid rgba(245, 158, 11, 0.22);
+    background: rgba(245, 158, 11, 0.12);
+    color: #B45309;
+    border: 1px solid rgba(245, 158, 11, 0.20);
   }
   .dark .badge-amber {
     background: rgba(245, 158, 11, 0.22);
     color: #FDE68A;
+    border-color: rgba(245, 158, 11, 0.22);
   }
   .badge-red {
-    background: rgba(239, 68, 68, 0.16);
-    color: #FCA5A5;
-    border: 1px solid rgba(239, 68, 68, 0.22);
+    background: rgba(239, 68, 68, 0.10);
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.18);
   }
   .dark .badge-red {
     background: rgba(239, 68, 68, 0.22);
     color: #FECACA;
+    border-color: rgba(239, 68, 68, 0.22);
   }
   .badge-blue {
-    background: rgba(59, 130, 246, 0.16);
-    color: #93C5FD;
-    border: 1px solid rgba(59, 130, 246, 0.22);
+    background: rgba(59, 130, 246, 0.10);
+    color: #1D4ED8;
+    border: 1px solid rgba(59, 130, 246, 0.18);
   }
   .dark .badge-blue {
     background: rgba(59, 130, 246, 0.22);
     color: #BFDBFE;
+    border-color: rgba(59, 130, 246, 0.22);
   }
   .badge-brand {
     background: var(--gradient-primary);
@@ -440,9 +520,6 @@
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
   }
-  /* Reserved strictly for premium/enterprise-tier labeling
-     ("Premium", "Enterprise", "$50K+ Build") — the one place gold appears
-     as a badge fill */
   .badge-gold {
     background: linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%);
     color: var(--color-accent-soft);
@@ -474,8 +551,7 @@
     box-shadow: 0 6px 16px rgba(15, 118, 110, 0.32);
   }
 
-  /* ---- Layout primitives (moved into the components layer; were
-     previously bare/un-layered rules at the bottom of the file) ---- */
+  /* ── Layout primitives ── */
   .page-hero {
     @apply pt-24 pb-20;
   }
@@ -497,6 +573,58 @@
   .eyebrow {
     @apply text-xs font-semibold tracking-widest uppercase mb-3 block;
     color: var(--color-accent);
+  }
+
+  /* ── Who-this-is-for pills — dark band that stays dark in light mode ──
+     Uses CSS variables so the inverse token swaps correctly. */
+  .store-type-pill {
+    background-color: var(--color-inverse-surface);
+    border: 1px solid var(--color-inverse-border);
+    border-radius: 0.75rem;
+    padding: 1.25rem 1rem;
+    text-align: center;
+    transition: border-color 0.2s ease;
+  }
+  .store-type-pill:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .store-type-pill-icon {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .store-type-pill-label {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  /* ── Problem/solution rows — always dark regardless of page theme ── */
+  .problem-row {
+    background-color: var(--color-inverse-surface);
+  }
+  .problem-cell {
+    border-color: var(--color-inverse-border);
+  }
+  .problem-text {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  /* ── Table utilities ── */
+  .table-header-cell {
+    background-color: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+  }
+  .table-row-alt {
+    background-color: rgba(0, 0, 0, 0.025);
+  }
+  .dark .table-row-alt {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  /* ── Focus ring — keyboard nav ── */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2;
+  }
+  .dark .focus-ring {
+    @apply focus-visible:ring-emerald-400/50;
   }
 }
 
@@ -542,8 +670,6 @@
       background-position: 200% 0;
     }
   }
-  /* Warm gold shimmer — the one place the luxury highlight moves;
-     reserved for the rare standout phrase, not body copy */
   .shimmer-text {
     background: linear-gradient(90deg, #D4AF37 20%, #F5E1A4 50%, #D4AF37 80%);
     background-size: 200% auto;

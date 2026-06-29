@@ -121,13 +121,13 @@ const FAQS_GROCERY = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-0">
+    <div className="border-b border-default last:border-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-5 text-left group focus:outline-none"
         aria-expanded={open}
       >
-        <span className="text-[15px] font-medium text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors pr-6 leading-snug">
+        <span className="text-[15px] font-medium text-zinc-800 dark:text-zinc-200 group-hover:text-primary transition-colors pr-6 leading-snug">
           {q}
         </span>
         <span
@@ -135,7 +135,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
           style={{ transform: open ? 'rotate(45deg)' : 'none' }}
           aria-hidden
         >
-          <Plus className="w-3 h-3 text-zinc-500" />
+          <Plus className="w-3 h-3 text-muted" />
         </span>
       </button>
       <AnimatePresence initial={false}>
@@ -148,7 +148,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="text-[14px] text-zinc-500 dark:text-zinc-400 leading-relaxed pb-5">{a}</p>
+            <p className="text-[14px] text-secondary leading-relaxed pb-5">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -165,7 +165,7 @@ export function PackageDetailClient({ slug }: Props) {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-24 bg-[#FAFAF8] dark:bg-zinc-950">
+      <div className="min-h-screen pt-24 bg-surface">
         <div className="max-w-5xl mx-auto px-6 md:px-10 space-y-6 animate-pulse">
           <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800" />
           <div className="h-14 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800" />
@@ -179,10 +179,10 @@ export function PackageDetailClient({ slug }: Props) {
   // ── Error ──
   if (error || !pkg) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center px-4 bg-[#FAFAF8] dark:bg-zinc-950">
+      <div className="min-h-screen pt-24 flex items-center justify-center px-4 bg-surface">
         <div className="text-center">
-          <h1 className="text-3xl font-light text-zinc-900 dark:text-zinc-100 mb-3">Package Not Found</h1>
-          <p className="text-zinc-500 mb-8">The package you're looking for doesn't exist or was removed.</p>
+          <h1 className="text-3xl font-light text-primary mb-3">Package Not Found</h1>
+          <p className="text-secondary mb-8">The package you're looking for doesn't exist or was removed.</p>
           <Link href="/packages" className="inline-flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[14px] font-semibold px-6 py-3 rounded-full transition hover:opacity-90">
             Back to Packages
           </Link>
@@ -197,7 +197,7 @@ export function PackageDetailClient({ slug }: Props) {
   const otherPackages = (allPackages || []).filter(p => p.id !== pkg.id);
 
   return (
-    <div className="bg-[#FAFAF8] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="bg-surface text-primary">
 
       {/* ── 1. HERO ───────────────────────────────────────────────────────── */}
       <section className="pt-24 pb-0 px-6 md:px-10 max-w-7xl mx-auto">

@@ -97,7 +97,7 @@ const fadeUp = (delay = 0) => ({
 
 function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-zinc-400 mb-2">
+    <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-zinc-500 dark:text-zinc-400 mb-2">
       {children}{required && <span className="text-amber-500 ml-1">*</span>}
     </p>
   );
@@ -116,8 +116,11 @@ function FieldInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required={required}
-      className={`w-full bg-transparent border-b border-zinc-700 py-3 text-[15px] text-zinc-100 placeholder:text-zinc-600
-        focus:outline-none focus:border-amber-400 transition-colors duration-200 ${className}`}
+      className={`w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 py-3 text-[15px]
+        text-zinc-900 dark:text-zinc-100
+        placeholder:text-zinc-400 dark:placeholder:text-zinc-600
+        focus:outline-none focus:border-amber-500 dark:focus:border-amber-400
+        transition-colors duration-200 ${className}`}
     />
   );
 }
@@ -125,9 +128,9 @@ function FieldInput({
 function SectionDivider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4 py-2">
-      <div className="h-px flex-1 bg-zinc-800" />
-      <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-zinc-600">{label}</span>
-      <div className="h-px flex-1 bg-zinc-800" />
+      <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+      <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-zinc-400 dark:text-zinc-600">{label}</span>
+      <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
     </div>
   );
 }
@@ -135,13 +138,13 @@ function SectionDivider({ label }: { label: string }) {
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-zinc-800">
+    <div className="border-b border-zinc-200 dark:border-zinc-800">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-5 text-left group"
       >
-        <span className="text-[15px] font-medium text-zinc-200 group-hover:text-white transition-colors pr-4">{q}</span>
-        <span className="text-zinc-500 flex-shrink-0 transition-transform duration-200" style={{ transform: open ? 'rotate(45deg)' : 'none' }}>
+        <span className="text-[15px] font-medium text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors pr-4">{q}</span>
+        <span className="text-zinc-400 dark:text-zinc-500 flex-shrink-0 transition-transform duration-200" style={{ transform: open ? 'rotate(45deg)' : 'none' }}>
           <Plus className="w-4 h-4" />
         </span>
       </button>
@@ -154,7 +157,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="text-zinc-400 text-[14px] leading-relaxed pb-5">{a}</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-[14px] leading-relaxed pb-5">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -224,7 +227,7 @@ export function ContactPageClient() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-white dark:bg-[#0A0A0B] flex items-center justify-center px-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -232,10 +235,10 @@ export function ContactPageClient() {
           className="text-center max-w-lg"
         >
           <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mx-auto mb-8">
-            <CheckCircle2 className="w-7 h-7 text-amber-400" />
+            <CheckCircle2 className="w-7 h-7 text-amber-500 dark:text-amber-400" />
           </div>
-          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-400 mb-4">Brief Received</p>
-          <h2 className="text-4xl font-light text-white mb-4 leading-tight">
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500 dark:text-amber-400 mb-4">Brief Received</p>
+          <h2 className="text-4xl font-light text-zinc-900 dark:text-white mb-4 leading-tight">
             We'll be in touch<br />within 24 hours.
           </h2>
           <p className="text-zinc-500 text-[15px] leading-relaxed mb-10">
@@ -243,7 +246,7 @@ export function ContactPageClient() {
           </p>
           <button
             onClick={() => setSubmitted(false)}
-            className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors underline underline-offset-4"
+            className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors underline underline-offset-4"
           >
             Submit another brief
           </button>
@@ -255,19 +258,27 @@ export function ContactPageClient() {
   // ── Main render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-[#0A0A0B] text-white">
+    <div className="bg-white dark:bg-[#0A0A0B] text-zinc-900 dark:text-white">
 
       {/* ── 1. HERO ───────────────────────────────────────────────────────── */}
       <section className="relative min-h-[92vh] flex flex-col justify-end px-6 md:px-16 pt-24 pb-20 overflow-hidden">
         {/* Ambient gradient */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-amber-400/5 blur-[120px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-amber-400/5 dark:bg-amber-400/5 blur-[120px]" />
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-amber-600/4 blur-[100px]" />
         </div>
 
         {/* Grid lines — purely decorative */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)',
+            backgroundSize: '80px 80px',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-[0.03]"
           style={{
             backgroundImage:
               'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
@@ -278,20 +289,20 @@ export function ContactPageClient() {
         <div className="relative max-w-5xl">
           <motion.p
             {...fadeUp(0)}
-            className="text-[11px] font-bold tracking-[0.22em] uppercase text-amber-400 mb-8"
+            className="text-[11px] font-bold tracking-[0.22em] uppercase text-amber-600 dark:text-amber-400 mb-8"
           >
             Project Inquiries
           </motion.p>
           <motion.h1
             {...fadeUp(0.05)}
-            className="text-5xl md:text-7xl lg:text-8xl font-light text-white leading-[1.04] mb-8 tracking-tight"
+            className="text-5xl md:text-7xl lg:text-8xl font-light text-zinc-900 dark:text-white leading-[1.04] mb-8 tracking-tight"
           >
             Some projects deserve<br />
-            <em className="not-italic font-extralight text-zinc-400">more than a form.</em>
+            <em className="not-italic font-extralight text-zinc-400 dark:text-zinc-400">more than a form.</em>
           </motion.h1>
           <motion.p
             {...fadeUp(0.1)}
-            className="text-[17px] text-zinc-400 max-w-xl leading-relaxed mb-14"
+            className="text-[17px] text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed mb-14"
           >
             We work with a small number of businesses at a time. Tell us about yours — we'll tell you honestly whether we're the right fit.
           </motion.p>
@@ -304,7 +315,7 @@ export function ContactPageClient() {
             </button>
             <a
               href="mailto:brizerhero@gmail.com"
-              className="inline-flex items-center gap-2 text-zinc-400 hover:text-white text-[14px] transition-colors"
+              className="inline-flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-[14px] transition-colors"
             >
               <Mail className="w-4 h-4" /> Or email us directly
             </a>
@@ -313,22 +324,22 @@ export function ContactPageClient() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-10 right-8 md:right-16 flex flex-col items-center gap-2 opacity-30">
-          <div className="w-px h-16 bg-gradient-to-b from-transparent to-white" />
+          <div className="w-px h-16 bg-gradient-to-b from-transparent to-zinc-900 dark:to-white" />
         </div>
       </section>
 
       {/* ── 2. WHY BUSINESSES WORK WITH US ───────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp()} className="mb-16">
-            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">Why us</p>
-            <h2 className="text-3xl md:text-5xl font-light text-white leading-snug max-w-2xl">
+            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">Why us</p>
+            <h2 className="text-3xl md:text-5xl font-light text-zinc-900 dark:text-white leading-snug max-w-2xl">
               We're not an agency.<br />
-              <span className="text-zinc-500">We're your technical co-founder.</span>
+              <span className="text-zinc-400 dark:text-zinc-500">We're your technical co-founder.</span>
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-200 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
             {[
               {
                 n: '01',
@@ -349,10 +360,10 @@ export function ContactPageClient() {
               <motion.div
                 key={item.n}
                 {...fadeUp(i * 0.06)}
-                className="bg-[#0F0F10] p-8 md:p-10"
+                className="bg-zinc-50 dark:bg-[#0F0F10] p-8 md:p-10"
               >
-                <p className="text-[11px] font-bold tracking-[0.18em] text-zinc-700 mb-6">{item.n}</p>
-                <h3 className="text-[17px] font-medium text-white mb-3">{item.title}</h3>
+                <p className="text-[11px] font-bold tracking-[0.18em] text-zinc-300 dark:text-zinc-700 mb-6">{item.n}</p>
+                <h3 className="text-[17px] font-medium text-zinc-900 dark:text-white mb-3">{item.title}</h3>
                 <p className="text-zinc-500 text-[14px] leading-relaxed">{item.body}</p>
               </motion.div>
             ))}
@@ -361,19 +372,19 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 3. WHAT HAPPENS AFTER YOU SUBMIT ─────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp()} className="mb-16">
-            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">The process</p>
-            <h2 className="text-3xl md:text-5xl font-light text-white leading-snug">
+            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">The process</p>
+            <h2 className="text-3xl md:text-5xl font-light text-zinc-900 dark:text-white leading-snug">
               What happens after<br />
-              <span className="text-zinc-500">you send your brief.</span>
+              <span className="text-zinc-400 dark:text-zinc-500">you send your brief.</span>
             </h2>
           </motion.div>
 
           <div className="relative">
             {/* Vertical line */}
-            <div className="absolute left-[19px] top-6 bottom-6 w-px bg-zinc-800 hidden md:block" />
+            <div className="absolute left-[19px] top-6 bottom-6 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block" />
 
             <div className="space-y-0">
               {[
@@ -401,16 +412,16 @@ export function ContactPageClient() {
                 <motion.div
                   key={i}
                   {...fadeUp(i * 0.07)}
-                  className="flex gap-8 md:gap-12 py-8 border-b border-zinc-900 last:border-0"
+                  className="flex gap-8 md:gap-12 py-8 border-b border-zinc-100 dark:border-zinc-900 last:border-0"
                 >
                   <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border border-zinc-700 bg-[#0A0A0B] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-[#0A0A0B] flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-amber-400" />
                     </div>
                   </div>
                   <div className="pt-1">
-                    <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-amber-400/70 mb-2">{item.step}</p>
-                    <h3 className="text-[18px] font-medium text-white mb-2">{item.title}</h3>
+                    <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-amber-500/70 dark:text-amber-400/70 mb-2">{item.step}</p>
+                    <h3 className="text-[18px] font-medium text-zinc-900 dark:text-white mb-2">{item.title}</h3>
                     <p className="text-zinc-500 text-[14px] leading-relaxed max-w-lg">{item.body}</p>
                   </div>
                 </motion.div>
@@ -421,26 +432,26 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 4. FOUNDER ───────────────────────────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div
             {...fadeUp()}
-            className="bg-[#111113] border border-zinc-800 rounded-3xl p-8 md:p-14 flex flex-col md:flex-row gap-10 md:gap-16 items-start"
+            className="bg-zinc-50 dark:bg-[#111113] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 md:p-14 flex flex-col md:flex-row gap-10 md:gap-16 items-start"
           >
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <div className="w-20 h-20 rounded-2xl bg-zinc-800 flex items-center justify-center text-3xl select-none">
+              <div className="w-20 h-20 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-3xl select-none">
                 👤
               </div>
             </div>
             <div>
-              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">From the founder</p>
-              <blockquote className="text-[20px] md:text-[24px] font-light text-zinc-200 leading-relaxed mb-8 max-w-2xl">
+              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">From the founder</p>
+              <blockquote className="text-[20px] md:text-[24px] font-light text-zinc-700 dark:text-zinc-200 leading-relaxed mb-8 max-w-2xl">
                 "We built this company to work deeply with a few clients — not shallowly with hundreds. If you're here, it means something brought you, and that matters to us."
               </blockquote>
               <div>
-                <p className="text-[15px] font-semibold text-white">Ritesh Kumar Maurya</p>
-                <p className="text-zinc-600 text-[13px]">Founder & CEO</p>
+                <p className="text-[15px] font-semibold text-zinc-900 dark:text-white">Ritesh Kumar Maurya</p>
+                <p className="text-zinc-400 dark:text-zinc-600 text-[13px]">Founder & CEO</p>
               </div>
             </div>
           </motion.div>
@@ -448,11 +459,11 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 5. CONTACT METHODS ───────────────────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp()} className="mb-14">
-            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">Other channels</p>
-            <h2 className="text-3xl md:text-4xl font-light text-white">Reach us your way.</h2>
+            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">Other channels</p>
+            <h2 className="text-3xl md:text-4xl font-light text-zinc-900 dark:text-white">Reach us your way.</h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
@@ -484,12 +495,12 @@ export function ContactPageClient() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group block bg-[#0F0F10] hover:bg-[#141416] border border-zinc-800 hover:border-zinc-700 rounded-2xl p-7 transition-all duration-200"
+                className="group block bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0F0F10] dark:hover:bg-[#141416] border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700 rounded-2xl p-7 transition-all duration-200"
               >
-                <item.icon className="w-5 h-5 text-zinc-600 group-hover:text-amber-400 mb-5 transition-colors" />
-                <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-zinc-600 mb-2">{item.label}</p>
-                <p className="text-[16px] font-medium text-white mb-1">{item.value}</p>
-                <p className="text-zinc-600 text-[13px]">{item.note}</p>
+                <item.icon className="w-5 h-5 text-zinc-400 dark:text-zinc-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 mb-5 transition-colors" />
+                <p className="text-[11px] font-bold tracking-[0.15em] uppercase text-zinc-400 dark:text-zinc-600 mb-2">{item.label}</p>
+                <p className="text-[16px] font-medium text-zinc-900 dark:text-white mb-1">{item.value}</p>
+                <p className="text-zinc-400 dark:text-zinc-600 text-[13px]">{item.note}</p>
               </motion.a>
             ))}
           </div>
@@ -497,11 +508,11 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 6. THE BRIEF (FORM) ───────────────────────────────────────────── */}
-      <section ref={formRef} className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section ref={formRef} className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp()} className="mb-16">
-            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">Start here</p>
-            <h2 className="text-3xl md:text-5xl font-light text-white leading-snug mb-4">
+            <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">Start here</p>
+            <h2 className="text-3xl md:text-5xl font-light text-zinc-900 dark:text-white leading-snug mb-4">
               Tell us about your project.
             </h2>
             <p className="text-zinc-500 text-[15px] max-w-lg">
@@ -515,7 +526,7 @@ export function ContactPageClient() {
               {/* Left column — form */}
               <motion.div {...fadeUp(0.05)} className="space-y-12">
 
-                {/* ─ You ─ */}
+                {/* ─ About You ─ */}
                 <div>
                   <SectionDivider label="About you" />
                   <div className="space-y-8 mt-8">
@@ -549,15 +560,15 @@ export function ContactPageClient() {
                             <select
                               value={form.countryCode}
                               onChange={(e) => setField('countryCode', e.target.value)}
-                              className="appearance-none bg-transparent border-b border-zinc-700 py-3 text-[15px] text-zinc-300 focus:outline-none focus:border-amber-400 pr-6 cursor-pointer transition-colors"
+                              className="appearance-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 py-3 text-[15px] text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 pr-6 cursor-pointer transition-colors"
                             >
                               {COUNTRY_CODES.map((c) => (
-                                <option key={c.code} value={c.code} className="bg-card">
+                                <option key={c.code} value={c.code} className="bg-white dark:bg-zinc-900">
                                   {c.label}
                                 </option>
                               ))}
                             </select>
-                            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-600 pointer-events-none" />
+                            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-600 pointer-events-none" />
                           </div>
                           <FieldInput
                             type="tel"
@@ -604,8 +615,8 @@ export function ContactPageClient() {
                             onClick={() => setField('businessType', form.businessType === bt.value ? undefined : bt.value)}
                             className={`px-4 py-2 rounded-full text-[13px] font-medium border transition-all duration-150 ${
                               form.businessType === bt.value
-                                ? 'border-amber-400 bg-amber-400/10 text-amber-300'
-                                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                                ? 'border-amber-400 bg-amber-400/10 text-amber-600 dark:text-amber-300'
+                                : 'border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300'
                             }`}
                           >
                             {bt.label}
@@ -625,13 +636,13 @@ export function ContactPageClient() {
                             className={`text-left px-4 py-4 rounded-xl border transition-all duration-150 ${
                               form.businessModelType === m.value
                                 ? 'border-amber-400 bg-amber-400/5'
-                                : 'border-zinc-800 hover:border-zinc-700'
+                                : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
                             }`}
                           >
-                            <p className={`text-[14px] font-semibold mb-0.5 ${form.businessModelType === m.value ? 'text-amber-300' : 'text-zinc-300'}`}>
+                            <p className={`text-[14px] font-semibold mb-0.5 ${form.businessModelType === m.value ? 'text-amber-600 dark:text-amber-300' : 'text-zinc-700 dark:text-zinc-300'}`}>
                               {m.label}
                             </p>
-                            <p className="text-zinc-600 text-[12px]">{m.subtitle}</p>
+                            <p className="text-zinc-400 dark:text-zinc-600 text-[12px]">{m.subtitle}</p>
                           </button>
                         ))}
                       </div>
@@ -659,13 +670,13 @@ export function ContactPageClient() {
                                   onChange={(v) => setField('sharePercentage', parseFloat(v) || undefined)}
                                   required
                                 />
-                                <span className="absolute right-0 bottom-3 text-zinc-600 text-[14px]">%</span>
+                                <span className="absolute right-0 bottom-3 text-zinc-400 dark:text-zinc-600 text-[14px]">%</span>
                               </div>
                             </div>
                             <div>
                               <Label>Tell us about your vision</Label>
                               <textarea
-                                className="w-full bg-transparent border-b border-zinc-700 py-3 text-[15px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                                className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 py-3 text-[15px] text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 transition-colors resize-none"
                                 rows={3}
                                 placeholder="Describe your startup, traction, team size, and what you're building..."
                                 value={form.projectIdea || ''}
@@ -695,8 +706,8 @@ export function ContactPageClient() {
                             onClick={() => setField('currencyCode', c.code)}
                             className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all ${
                               form.currencyCode === c.code
-                                ? 'border-amber-400 bg-amber-400/10 text-amber-300'
-                                : 'border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400'
+                                ? 'border-amber-400 bg-amber-400/10 text-amber-600 dark:text-amber-300'
+                                : 'border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-400'
                             }`}
                           >
                             {c.flag} {c.code}
@@ -713,8 +724,8 @@ export function ContactPageClient() {
                               onClick={() => { setField('budgetMin', r.min); setField('budgetMax', r.max); }}
                               className={`px-4 py-2.5 rounded-full text-[13px] font-medium border transition-all duration-150 ${
                                 sel
-                                  ? 'border-amber-400 bg-amber-400/10 text-amber-300'
-                                  : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                                  ? 'border-amber-400 bg-amber-400/10 text-amber-600 dark:text-amber-300'
+                                  : 'border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300'
                               }`}
                             >
                               {form.currencyCode === 'INR' ? '₹' : form.currencyCode === 'EUR' ? '€' : form.currencyCode === 'GBP' ? '£' : form.currencyCode === 'AED' ? 'د.إ' : '$'}{r.label}
@@ -730,18 +741,18 @@ export function ContactPageClient() {
                         <Label>Interested in a specific package?</Label>
                         <div className="relative">
                           <select
-                            className="w-full appearance-none bg-transparent border-b border-zinc-700 py-3 text-[15px] text-zinc-300 focus:outline-none focus:border-amber-400 cursor-pointer transition-colors pr-6"
+                            className="w-full appearance-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 py-3 text-[15px] text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 cursor-pointer transition-colors pr-6"
                             value={form.packageId || ''}
                             onChange={(e) => setField('packageId', e.target.value ? parseInt(e.target.value) : undefined)}
                           >
-                            <option value="" className="bg-card">No specific package</option>
+                            <option value="" className="bg-white dark:bg-zinc-900">No specific package</option>
                             {packages.map((p) => (
-                              <option key={p.id} value={p.id} className="bg-card">
+                              <option key={p.id} value={p.id} className="bg-white dark:bg-zinc-900">
                                 {p.name} — {p.currencyCode} {p.price.toLocaleString()}
                               </option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-0 bottom-3.5 w-3.5 h-3.5 text-zinc-600 pointer-events-none" />
+                          <ChevronDown className="absolute right-0 bottom-3.5 w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600 pointer-events-none" />
                         </div>
                       </div>
                     )}
@@ -749,7 +760,7 @@ export function ContactPageClient() {
                     <div>
                       <Label required>Project details</Label>
                       <textarea
-                        className="w-full bg-transparent border-b border-zinc-700 py-3 text-[15px] text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                        className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 py-3 text-[15px] text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 transition-colors resize-none"
                         rows={5}
                         placeholder="Describe what you're building, what exists today, and what you need from us. The more specific, the better our initial response will be."
                         value={form.message}
@@ -778,7 +789,7 @@ export function ContactPageClient() {
                       </>
                     )}
                   </button>
-                  <p className="text-zinc-700 text-[12px] mt-4">
+                  <p className="text-zinc-400 dark:text-zinc-700 text-[12px] mt-4">
                     No commitment. No spam. A human reads every submission.
                   </p>
                 </div>
@@ -789,8 +800,8 @@ export function ContactPageClient() {
                 {...fadeUp(0.1)}
                 className="hidden lg:block sticky top-24 space-y-6"
               >
-                <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-7">
-                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-600 mb-5">What to expect</p>
+                <div className="bg-zinc-50 dark:bg-[#111113] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7">
+                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">What to expect</p>
                   <ul className="space-y-4">
                     {[
                       '24h acknowledgement guarantee',
@@ -799,28 +810,28 @@ export function ContactPageClient() {
                       'NDA available on request',
                       'No sales pressure',
                     ].map((item) => (
-                      <li key={item} className="flex items-start gap-3 text-[13px] text-zinc-400">
-                        <ChevronRight className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <li key={item} className="flex items-start gap-3 text-[13px] text-zinc-500 dark:text-zinc-400">
+                        <ChevronRight className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                         {item}
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-7">
-                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-600 mb-4">Current availability</p>
+                <div className="bg-zinc-50 dark:bg-[#111113] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7">
+                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-400 dark:text-zinc-600 mb-4">Current availability</p>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-white text-[14px] font-medium">Taking on new clients</span>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+                    <span className="text-zinc-900 dark:text-white text-[14px] font-medium">Taking on new clients</span>
                   </div>
-                  <p className="text-zinc-600 text-[12px]">We have 2 project slots open this quarter.</p>
+                  <p className="text-zinc-400 dark:text-zinc-600 text-[12px]">We have 2 project slots open this quarter.</p>
                 </div>
 
-                <div className="bg-[#111113] border border-zinc-800 rounded-2xl p-7">
-                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-600 mb-4">Prefer to talk first?</p>
+                <div className="bg-zinc-50 dark:bg-[#111113] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-7">
+                  <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-zinc-400 dark:text-zinc-600 mb-4">Prefer to talk first?</p>
                   <a
                     href="mailto:brizerhero@gmail.com"
-                    className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-[14px] font-medium transition-colors"
+                    className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300 text-[14px] font-medium transition-colors"
                   >
                     <Mail className="w-4 h-4" /> brizerhero@gmail.com
                   </a>
@@ -832,12 +843,12 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 7. FAQ ───────────────────────────────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-12 md:gap-20">
             <motion.div {...fadeUp()}>
-              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-600 mb-5">FAQ</p>
-              <h2 className="text-3xl font-light text-white leading-snug">
+              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-zinc-400 dark:text-zinc-600 mb-5">FAQ</p>
+              <h2 className="text-3xl font-light text-zinc-900 dark:text-white leading-snug">
                 Common<br />questions.
               </h2>
             </motion.div>
@@ -851,21 +862,21 @@ export function ContactPageClient() {
       </section>
 
       {/* ── 8. FINAL CTA ─────────────────────────────────────────────────── */}
-      <section className="px-6 md:px-16 py-20 border-t border-zinc-900">
+      <section className="px-6 md:px-16 py-20 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-5xl mx-auto">
           <motion.div
             {...fadeUp()}
-            className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-[#0F0F10] p-12 md:p-20 text-center"
+            className="relative overflow-hidden rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0F0F10] p-12 md:p-20 text-center"
           >
             {/* Background glow */}
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="w-[600px] h-[300px] rounded-full bg-amber-400/4 blur-[100px]" />
             </div>
             <div className="relative">
-              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-amber-400/60 mb-6">Ready?</p>
-              <h2 className="text-4xl md:text-6xl font-light text-white leading-tight mb-6">
+              <p className="text-[11px] font-bold tracking-[0.22em] uppercase text-amber-500/60 dark:text-amber-400/60 mb-6">Ready?</p>
+              <h2 className="text-4xl md:text-6xl font-light text-zinc-900 dark:text-white leading-tight mb-6">
                 Your next step<br />
-                <span className="text-zinc-500">is one brief away.</span>
+                <span className="text-zinc-400 dark:text-zinc-500">is one brief away.</span>
               </h2>
               <p className="text-zinc-500 text-[16px] mb-10 max-w-md mx-auto">
                 No lengthy forms. No sales calls before you're ready. Just an honest conversation about whether we're right for each other.

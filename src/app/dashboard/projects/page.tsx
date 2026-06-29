@@ -13,7 +13,9 @@ import { getThumbUrl, getOptimizedUrl } from '@/lib/cdn';
 import { formatDate, cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import type { ProjectResponse, LinkResponse, TechnologyResponse, ProjectBannerImageResponse } from '@/types';
+import type {
+  ProjectResponse, LinkResponse, TechnologyResponse, ProjectBannerImageResponse,
+} from '@/types';
 
 const DELIVERABLE_TYPES = [
   { value: 'WEBSITE', label: 'Website' },
@@ -63,37 +65,97 @@ function ProjectModal({
   const [newBannerPreviews, setNewBannerPreviews] = useState<string[]>([]);
   const [removeBannerIds, setRemoveBannerIds] = useState<number[]>([]);
 
-  // External links
+  // External links — same local shape style as Packages' `packageServices`:
+  // keeps the full nested object for display AND the join-row `mappingId`
+  // needed to call the dedicated remove endpoint.
   const [externalLinks, setExternalLinks] = useState<
-    { linkId: number; displayOrder: number; link?: LinkResponse }[]
+    { linkId: number; displayOrder: number; link: LinkResponse; mappingId?: number }[]
   >(() => {
     if (project?.externalLinks) {
-      return project.externalLinks.map((link, idx) => ({
-        linkId: link.id,
-        displayOrder: idx,
-        link,
-      }));
+      return project.externalLinks
+        .map((el) => {
+          if (!el.link?.id) return null;
+          return {
+            linkId: el.link.id,
+            displayOrder: el.displayOrder ?? 0,
+            link: el.link,
+            mappingId: el.id,
+          };
+        })
+        .filter(Boolean) as { linkId: number; displayOrder: number; link: LinkResponse; mappingId: number }[];
     }
     return [];
   });
   const [linkSearch, setLinkSearch] = useState('');
+  const [loadingLinks, setLoadingLinks] = useState(false);
 
-  // Technologies
+  // Technologies — same pattern as External Links above.
   const [projectTechnologies, setProjectTechnologies] = useState<
-    { technologyId: number; displayOrder: number; technology?: TechnologyResponse }[]
+    { technologyId: number; displayOrder: number; technology: TechnologyResponse; mappingId?: number }[]
   >(() => {
     if (project?.technologies) {
-      return project.technologies.map((pt, idx) => ({
-        technologyId: pt.technology.id,
-        displayOrder: idx,
-        technology: pt.technology,
-      }));
+      return project.technologies
+        .map((pt) => {
+          if (!pt.technology?.id) return null;
+          return {
+            technologyId: pt.technology.id,
+            displayOrder: pt.displayOrder ?? 0,
+            technology: pt.technology,
+            mappingId: pt.id,
+          };
+        })
+        .filter(Boolean) as { technologyId: number; displayOrder: number; technology: TechnologyResponse; mappingId: number }[];
     }
     return [];
   });
   const [techSearch, setTechSearch] = useState('');
+  const [loadingTechnologies, setLoadingTechnologies] = useState(false);
 
   const [saving, setSaving] = useState(false);
+
+  // Refresh just the Technologies/Links portion of the project from the
+  // backend and replace local state wholesale — same as Packages'
+  // refreshPackage(). Also invalidates the admin table query so the
+  // Technologies/Links count shown in the row behind the modal stays
+  // in sync even while the modal is still open.
+  const refreshProjectAssociations = async () => {
+    if (!project?.id) return;
+    try {
+      const res = await adminApi.getProjectById(project.id);
+      const fresh = res.data.data;
+      if (fresh?.technologies) {
+        const mappedTechs = fresh.technologies
+          .map((pt) => {
+            if (!pt.technology?.id) return null;
+            return {
+              technologyId: pt.technology.id,
+              displayOrder: pt.displayOrder ?? 0,
+              technology: pt.technology,
+              mappingId: pt.id,
+            };
+          })
+          .filter(Boolean) as { technologyId: number; displayOrder: number; technology: TechnologyResponse; mappingId: number }[];
+        setProjectTechnologies(mappedTechs);
+      }
+      if (fresh?.externalLinks) {
+        const mappedLinks = fresh.externalLinks
+          .map((el) => {
+            if (!el.link?.id) return null;
+            return {
+              linkId: el.link.id,
+              displayOrder: el.displayOrder ?? 0,
+              link: el.link,
+              mappingId: el.id,
+            };
+          })
+          .filter(Boolean) as { linkId: number; displayOrder: number; link: LinkResponse; mappingId: number }[];
+        setExternalLinks(mappedLinks);
+      }
+      await qc.invalidateQueries({ queryKey: ['admin', 'projects'] });
+    } catch (err) {
+      console.error('Failed to refresh project:', err);
+    }
+  };
 
   // Thumb handlers
   const handleThumbChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -492,9 +554,9 @@ function ProjectViewModal({
               <div>
                 <label className="text-xs font-semibold flex gap-1"><LinkIcon className="w-3 h-3" /> External Links</label>
                 <div className="mt-1 space-y-1">
-                  {project.externalLinks.map(link => (
-                    <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-500 hover:underline block truncate">
-                      {link.name} – {link.url}
+                  {project.externalLinks.map(externalLink => (
+                    <a key={externalLink.id} href={externalLink.link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-500 hover:underline block truncate">
+                      {externalLink.link.name} – {externalLink.link.url}
                     </a>
                   ))}
                 </div>
