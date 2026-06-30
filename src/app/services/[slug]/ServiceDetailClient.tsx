@@ -255,13 +255,13 @@ export function ServiceDetailClient({ slug }: { slug: string }) {
       <main id="main-content">
 
         {/* ═════════════════════════════════════════════════════════════
-            HERO
+            HERO — split: copy left, big image card right
         ═════════════════════════════════════════════════════════════ */}
         <section
-          className="pt-24 pb-24 bg-white dark:bg-zinc-950"
+          className="pt-24 pb-24 bg-white dark:bg-zinc-950 overflow-hidden"
           aria-label="Service overview"
         >
-          <div className="section-container max-w-4xl">
+          <div className="section-container">
             {/* Back */}
             <motion.div
               initial={{ opacity: 0, x: -12 }}
@@ -277,61 +277,102 @@ export function ServiceDetailClient({ slug }: { slug: string }) {
               </Link>
             </motion.div>
 
-            <motion.div
-              initial={false}
-              animate="visible"
-              variants={stagger}
-            >
-              {/* Icon */}
-              <motion.div variants={fadeUp} className="mb-8">
-                <div className="w-14 h-14 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
+            <div className="grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-10 items-center">
+              {/* ─── Left: copy ─────────────────────────────────────── */}
+              <motion.div
+                initial={false}
+                animate="visible"
+                variants={stagger}
+              >
+                {/* Icon */}
+                <motion.div variants={fadeUp} className="mb-8">
+                  <div className="w-14 h-14 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-brand-600 dark:text-brand-400" strokeWidth={1.5} aria-hidden="true" />
+                  </div>
+                </motion.div>
+
+                <motion.p
+                  variants={fadeUp}
+                  className="text-xs font-semibold tracking-[0.18em] uppercase text-brand-600 dark:text-brand-400 mb-4"
+                >
+                  Built for Grocery, Bakery & Specialty Food Businesses
+                </motion.p>
+
+                <motion.h1
+                  variants={fadeUp}
+                  className="font-display text-4xl md:text-5xl lg:text-[3.4rem] font-bold text-zinc-900 dark:text-zinc-50 leading-[1.06] tracking-tight mb-6"
+                >
+                  {service.name}
+                </motion.h1>
+
+                <motion.p
+                  variants={fadeUp}
+                  className="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xl mb-10"
+                >
+                  {service.shortDescription}
+                </motion.p>
+
+                <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+                  >
+                    Discuss this for your store
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </Link>
+                  <span className="text-sm text-zinc-400 dark:text-zinc-500">
+                    Free 20-minute grocery strategy call
+                  </span>
+                </motion.div>
+              </motion.div>
+
+              {/* ─── Right: big image card ──────────────────────────── */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                className="relative"
+              >
+                <div className="relative aspect-[4/5] sm:aspect-[5/5.2] lg:aspect-[4/5] w-full rounded-[2rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.18)] dark:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
                   {iconSrc && !iconError ? (
                     <Image
                       src={iconSrc}
-                      alt=""
-                      width={28}
-                      height={28}
-                      className="w-7 h-7 object-contain"
+                      alt={service.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 45vw"
+                      className="object-cover"
                       onError={() => setIconError(true)}
-                      unoptimized
+                      priority
                     />
                   ) : (
-                    <Icon className="w-6 h-6 text-brand-600 dark:text-brand-400" strokeWidth={1.5} aria-hidden="true" />
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 via-zinc-50 to-amber-50 dark:from-emerald-950/30 dark:via-zinc-900 dark:to-amber-950/20">
+                      <Icon
+                        className="w-28 h-28 text-brand-500/40 dark:text-brand-400/30"
+                        strokeWidth={1}
+                        aria-hidden="true"
+                      />
+                    </div>
                   )}
+
+                  {/* Subtle gradient for legibility if badges sit on top */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent pointer-events-none" />
+
+                  {/* Floating badge */}
+                  <div className="absolute top-5 left-5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3.5 py-2 rounded-full bg-white/95 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-100 backdrop-blur-sm border border-white/60 dark:border-zinc-700 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" aria-hidden="true" />
+                      For Food & Grocery Businesses
+                    </span>
+                  </div>
                 </div>
+
+                {/* Decorative accent block behind the card */}
+                <div
+                  className="absolute -z-10 -bottom-6 -right-6 w-2/3 h-2/3 rounded-[2rem] bg-gradient-to-br from-brand-100 to-amber-100 dark:from-brand-900/20 dark:to-amber-900/10"
+                  aria-hidden="true"
+                />
               </motion.div>
-
-              <motion.p
-                variants={fadeUp}
-                className="text-xs font-semibold tracking-[0.18em] uppercase text-brand-600 dark:text-brand-400 mb-4"
-              >
-                Business Solution
-              </motion.p>
-
-              <motion.h1
-                variants={fadeUp}
-                className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-zinc-50 leading-[1.06] tracking-tight mb-6"
-              >
-                {service.name}
-              </motion.h1>
-
-              <motion.p
-                variants={fadeUp}
-                className="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl mb-10"
-              >
-                {service.shortDescription}
-              </motion.p>
-
-              <motion.div variants={fadeUp}>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-                >
-                  Discuss this for your business
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                </Link>
-              </motion.div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -499,9 +540,10 @@ export function ServiceDetailClient({ slug }: { slug: string }) {
                 variants={fadeUp}
                 className="text-lg text-zinc-600 dark:text-zinc-300 leading-[1.8] mb-10"
               >
-                We choose tools based on how well they serve your business — not how recently
-                they were released. Every tool in this stack was chosen because it keeps
-                your system fast, secure, and running without you needing to think about it.
+                We choose tools based on how well they serve a grocery, bakery, or specialty
+                food business — not how recently they were released. Every tool in this stack
+                was chosen because it keeps your store fast, secure, and running without you
+                needing to think about it.
               </motion.p>
               <motion.div
                 variants={fadeUp}

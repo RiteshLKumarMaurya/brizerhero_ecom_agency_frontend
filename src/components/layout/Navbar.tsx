@@ -15,18 +15,16 @@ import { Logo } from '@/components/common/Logo';
 // Primary information architecture — grocery-first, not feature/module-first.
 // "Home" is intentionally omitted: the logo already serves as the home link.
 const navLinks = [
-  // { href: '/solutions', label: 'Solutions' },
-  { href: '/services', label: 'Industries' },
+  { href: '/services', label: 'Solutions' },
   { href: '/projects', label: 'Case Studies' },
   { href: '/packages', label: 'Pricing' },
   { href: '/how-to-use', label: 'Resources' },
-  { href: '/technologies', label: 'Technologies' }, 
-  { href: '/features', label: 'Features' },
-
-
+  { href: '/technologies', label: 'Tech Stack' },
+  { href: '/features', label: 'Platform' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ] as const;
+
 
 const PRIMARY_CTA = { label: 'Book Free Strategy Call', href: '/contact' };
 
@@ -106,7 +104,7 @@ export function Navbar() {
   </span>
 </Link>
             {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden xl:flex items-center gap-2 ml-8">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -115,11 +113,19 @@ export function Navbar() {
                     href={link.href}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'relative px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200',
-                      focusRing,
-                      isActive
-                        ? 'text-brand-600 dark:text-brand-400'
-                        : 'text-secondary hover:text-primary hover:bg-card-hover'
+                          `
+                          relative
+                          whitespace-nowrap
+                          rounded-xl
+                          px-3
+                          2xl:px-4
+                          py-2
+                          text-[14px]
+                          xl:text-[15px]
+                          font-medium
+                          transition-all
+                          duration-200
+                          `,
                     )}
                   >
                     {link.label}
@@ -140,7 +146,7 @@ export function Navbar() {
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-3">
               {/* Theme Toggle */}
               {mounted && (
                 <button
@@ -220,7 +226,7 @@ export function Navbar() {
             transition={{ duration: prefersReducedMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
               'fixed inset-x-0 bottom-0 z-40 lg:hidden bg-[var(--color-background)]/98 backdrop-blur-2xl overflow-y-auto',
-              scrolled ? 'top-16' : 'top-20'
+              scrolled ? "h-[72px]" : "h-[84px]"
             )}
           >
             <div className="h-full flex flex-col px-6 py-8">

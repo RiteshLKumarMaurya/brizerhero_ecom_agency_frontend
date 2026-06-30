@@ -22,7 +22,7 @@ export function ContactCta({
   primaryCtaText = "Book a Free Strategy Call",
   primaryCtaHref = "/contact",
   secondaryCtaText = "View Case Studies",
-  secondaryCtaHref = "/case-studies",
+  secondaryCtaHref = "/projects",
   trustLine = "A focused conversation. No templates, no pressure — just a candid look at what's possible for your store.",
 }: ContactCtaProps) {
   const ease = [0.25, 0.1, 0.25, 1] as const;
