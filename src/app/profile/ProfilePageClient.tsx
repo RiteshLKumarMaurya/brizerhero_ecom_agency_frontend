@@ -12,6 +12,8 @@ import {
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
+import { useShallow } from 'zustand/react/shallow';
+import { useLogout } from '@/hooks/useLogout';
 import {
   useMe,
   useUpdateMe,
@@ -41,13 +43,15 @@ const tabs = [
 // ─── Main Component ───────────────────────────────────────────
 export function ProfilePageClient() {
   const router = useRouter();
-  const {
-    user: storeUser,
-    isAuthenticated,
-    isHydrated,
-    setUser,
-    clearAuth,
-  } = useAuthStore();
+  const { user: storeUser, isAuthenticated, isHydrated, setUser } = useAuthStore(
+    useShallow((s) => ({
+      user: s.user,
+      isAuthenticated: s.isAuthenticated,
+      isHydrated: s.isHydrated,
+      setUser: s.setUser,
+    }))
+  );
+  const logout = useLogout();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -311,10 +315,8 @@ export function ProfilePageClient() {
 
   // Logout
   const handleLogout = async () => {
-    try { await authApi.logout({}); } catch {}
-    clearAuth();
+    await logout({ redirectTo: '/' });
     toast.success('Logged out successfully');
-    router.push('/');
   };
 
   // Address CRUD

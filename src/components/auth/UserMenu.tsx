@@ -2,30 +2,22 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, LayoutDashboard, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { authApi } from '@/services/api';
+import { useLogout } from '@/hooks/useLogout';
 import { getThumbUrl } from '@/lib/cdn';
 import toast from 'react-hot-toast';
 
 export function UserMenu() {
   const [open, setOpen] = useState(false);
-  const { user, clearAuth } = useAuthStore();
-  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logout = useLogout();
 
   const handleLogout = async () => {
-    try {
-      // Backend logout uses deviceToken (optional), not refreshToken
-      await authApi.logout({});
-    } catch {
-      // Ignore logout API errors — clear local state regardless
-    }
-    clearAuth();
+    await logout({ redirectTo: '/' });
     toast.success('Logged out successfully');
     setOpen(false);
-    router.push('/');
   };
 
   const isAdmin = user?.roleName === 'ROLE_ADMIN' ;

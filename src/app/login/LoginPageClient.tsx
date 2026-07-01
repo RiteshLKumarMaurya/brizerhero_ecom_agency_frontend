@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -18,10 +18,22 @@ export function LoginPageClient() {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuthStore();
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const isHydrated = useAuthStore((s) => s.isHydrated);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
+
+  // If the store rehydrates with an already-valid session (e.g. this tab
+  // was opened directly to /login while another tab is logged in, or the
+  // user hit back after signing in), send them straight through instead of
+  // letting them re-submit the login form against a live session.
+  useEffect(() => {
+    if (isHydrated && isAuthenticated) {
+      router.replace(redirectTo);
+    }
+  }, [isHydrated, isAuthenticated, router, redirectTo]);
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +79,7 @@ export function LoginPageClient() {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="relative w-full max-w-md"
       >
-        {/* Logo */}
+        {/* Logo
         <Link href="/" className="flex justify-center mb-8 transition-opacity hover:opacity-80">
           <Image
             src="/logo.svg"          // CHANGE TO YOUR LOGO
@@ -77,7 +89,7 @@ export function LoginPageClient() {
             priority
             className="h-12 w-auto"
           />
-        </Link>
+        </Link> */}
 
         {/* Glass Card */}
         <div className="relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-2xl shadow-zinc-200/50 dark:shadow-zinc-950/50 rounded-3xl p-8 space-y-8">

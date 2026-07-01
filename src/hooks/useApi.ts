@@ -11,6 +11,7 @@ import {
   AddressResponse,
 } from '@/types';
 import toast from 'react-hot-toast';
+import { isTransientError } from '@/lib/apiClient';
 
 import axios from 'axios';
 
@@ -268,12 +269,20 @@ export function useSettings() {
   });
 }
 
-export function useMe() {
+export function useMe(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.me,
     queryFn: () => userApi.getMe().then((r) => r.data.data),
-    retry: false,
+    // Retry transient failures — connectivity blips AND backend 5xx errors
+    // (a server hiccup or mid-deploy blip is not "not authenticated" any
+    // more than being offline is). A real 401/403 from the backend is
+    // never retried here; apiClient's interceptor already attempted a
+    // token refresh before this error surfaces, so by the time useMe sees
+    // a 401 it's a confirmed rejection, not something retrying will fix.
+    retry: (failureCount, error) => (isTransientError(error) ? failureCount < 2 : false),
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
     staleTime: 2 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
 

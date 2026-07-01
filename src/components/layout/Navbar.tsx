@@ -46,7 +46,13 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthStore();
+  const storeIsAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isStoreHydrated = useAuthStore((s) => s.isHydrated);
+  // Before the persisted store has rehydrated, treat the user as signed
+  // out for rendering purposes rather than showing whatever the default
+  // `false` happens to coincide with — avoids a flash between logged-in
+  // and logged-out nav states on load.
+  const isAuthenticated = isStoreHydrated && storeIsAuthenticated;
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => setMounted(true), []);
@@ -104,7 +110,7 @@ export function Navbar() {
   </span>
 </Link>
             {/* Desktop Nav */}
-            <div className="hidden xl:flex items-center gap-2 ml-8">
+            <div className="hidden lg:flex items-center gap-2 ml-8">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -113,21 +119,24 @@ export function Navbar() {
                     href={link.href}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                          `
-                          relative
-                          whitespace-nowrap
-                          rounded-xl
-                          px-3
-                          2xl:px-4
-                          py-2
-                          text-[14px]
-                          xl:text-[15px]
-                          font-medium
-                          transition-all
-                          duration-200
-                          `,
+                      `
+                      relative
+                      whitespace-nowrap
+                      rounded-xl
+                      px-3
+                      2xl:px-4
+                      py-2
+                      text-[14px]
+                      lg:text-[15px]
+                      font-medium
+                      text-primary
+                      hover:text-[var(--color-primary)]
+                      transition-all
+                      duration-200
+                      `,
+                      
                     )}
-                  >
+                                      >
                     {link.label}
                     {isActive && (
                       <motion.span
@@ -225,11 +234,10 @@ export function Navbar() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.25, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              'fixed inset-x-0 bottom-0 z-40 lg:hidden bg-[var(--color-background)]/98 backdrop-blur-2xl overflow-y-auto',
-              scrolled ? "h-[72px]" : "h-[84px]"
+              "fixed inset-0 z-40 lg:hidden bg-[var(--color-background)]/98 backdrop-blur-2xl overflow-y-auto pt-24"
             )}
           >
-            <div className="h-full flex flex-col px-6 py-8">
+            <div className="min-h-full flex flex-col px-6 pb-8">
               <motion.nav
                 variants={mobileListVariants}
                 initial="initial"

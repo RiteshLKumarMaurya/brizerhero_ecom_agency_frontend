@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { useMe } from '@/hooks/useApi';
 import { useAuthStore } from '@/store/authStore';
+import { useLogout } from '@/hooks/useLogout';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { isAuthError, isTransientError } from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 
@@ -34,17 +37,59 @@ const navItems = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: me, isLoading, isError } = useMe();
-  const logout = useAuthStore((s) => s.logout);
+
+  const isHydrated = useAuthStore((s) => s.isHydrated);
+  const authStatus = useAuthStore((s) => s.status);
+  const isOnline = useNetworkStatus();
+
+  // Only run `useMe()` once we are confirmed authenticated. Deliberately
+  // NOT enabled during 'authenticating' — that phase is owned exclusively
+  // by AuthProvider's boot-time validation (authApi.validateToken +
+  // userApi.getMe), which already populates the store's `user`. Enabling
+  // this query during 'authenticating' too caused a duplicate /users/me
+  // request racing AuthProvider's own call on every cold boot.
+  const authReady = isHydrated && authStatus === 'authenticated';
+  const { data: me, isLoading, isError, error } = useMe({
+    enabled: authReady,
+  });
+
+  const logout = useLogout();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isLoading && (isError || (me && me.roleName !== 'ROLE_ADMIN'))) {
+    // Wait for hydration — never make a redirect decision on default/initial
+    // state, which is indistinguishable from "logged out."
+    if (!isHydrated) return;
+
+    // No persisted session at all: this is a real, confirmed
+    // unauthenticated state (set explicitly by the store's rehydrate
+    // callback), not a loading/error ambiguity.
+    if (authStatus === 'unauthenticated') {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // Still validating a persisted session on boot, or the profile query
+    // hasn't settled yet — keep waiting, do not redirect.
+    if (authStatus === 'authenticating' || isLoading) return;
+
+    // Transient failures — offline, timeout, or the backend returning a
+    // 5xx (down, mid-deploy, overloaded) — must NEVER redirect to login.
+    // These say nothing about whether the session is valid; the query
+    // will retry on its own, and reconnect handling will nudge it further.
+    if (isError && isTransientError(error)) return;
+
+    // Only a confirmed backend rejection (401/403 that survived the
+    // refresh attempt in apiClient) or an explicit "wrong role" response
+    // is allowed to redirect. A generic/unclassified error is treated as
+    // transient too, out of caution — we never want an edge-case error
+    // shape to force a logout.
+    if ((isError && isAuthError(error)) || (me && me.roleName !== 'ROLE_ADMIN')) {
       router.replace('/login');
     }
-  }, [me, isLoading, isError, router]);
+  }, [isHydrated, authStatus, me, isLoading, isError, error, pathname, router]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,8 +103,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = () => {
     logout();
-    router.replace('/login');
   };
+
+  // Block render while we genuinely don't know the auth state yet
+  // (pre-hydration, actively validating a persisted session on boot, or
+  // confirmed unauthenticated but the redirect effect above hasn't
+  // navigated away yet). Once authenticated, a background refetch of `me`
+  // (e.g. after reconnect) must NOT blank the screen — only the very
+  // first load does.
+  const showBootLoader =
+    !isHydrated ||
+    authStatus === 'authenticating' ||
+    authStatus === 'unauthenticated' ||
+    (authStatus === 'authenticated' && isLoading && !me);
+
+  if (showBootLoader) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const isActive = (item: (typeof navItems)[0]) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -177,9 +241,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
+        {!isOnline && (
+          <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-xs font-medium text-amber-700 dark:text-amber-400 text-center flex-shrink-0">
+            You&apos;re offline. Your session is still active — changes will retry automatically once you&apos;re back online.
+          </div>
+        )}
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
-            {isLoading ? (
+            {isLoading && !me ? (
               <div className="flex items-center justify-center min-h-[400px]">
                 <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
               </div>

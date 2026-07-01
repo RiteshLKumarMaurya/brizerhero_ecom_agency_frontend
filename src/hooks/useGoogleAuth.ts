@@ -29,7 +29,7 @@ declare global {
 
 export function useGoogleAuth() {
   const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuthStore();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
   const handleCredentialResponse = useCallback(

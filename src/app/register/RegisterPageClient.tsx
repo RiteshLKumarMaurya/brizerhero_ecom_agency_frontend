@@ -23,7 +23,7 @@ export function RegisterPageClient() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuthStore();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -86,17 +86,7 @@ export function RegisterPageClient() {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className="relative w-full max-w-md"
       >
-        {/* Logo */}
-        <Link href="/" className="flex justify-center mb-8 transition-opacity hover:opacity-80">
-          <Image
-            src="/logo.svg"          // CHANGE TO YOUR LOGO
-            alt="Your Brand Logo"
-            width={180}
-            height={52}
-            priority
-            className="h-12 w-auto"
-          />
-        </Link>
+        
 
         {/* Glass Card */}
         <div className="relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-2xl shadow-zinc-200/50 dark:shadow-zinc-950/50 rounded-3xl p-8 space-y-8">
